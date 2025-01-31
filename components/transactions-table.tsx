@@ -1,7 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
   type NormalizedTransaction,
   TransactionSource,
   NormalizedTransactionType,
   type ExchangeAmount,
-} from "@/models/transactions"
+} from "@/models/transactions";
 
 // Mock data
 const transactions: NormalizedTransaction[] = [
@@ -50,50 +57,81 @@ const transactions: NormalizedTransaction[] = [
     filedWithIRS: true,
   },
   // Add more mock transactions as needed
-]
+];
 
 type SortKey =
   | keyof NormalizedTransaction
   | "transactionAmountFiat.amount"
   | "fee.amount"
   | "assetAmount.amount"
-  | "assetValueFiat.amount"
+  | "assetValueFiat.amount";
 
 export function TransactionsTable() {
-  const [sortKey, setSortKey] = useState<SortKey>("timestamp")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("timestamp");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  const sortedTransactions = [...transactions].sort((a, b) => {
-    let aValue: any
-    let bValue: any
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    if (sortKey.includes(".")) {
-      const [key, subKey] = sortKey.split(".")
-      aValue = (a[key as keyof NormalizedTransaction] as ExchangeAmount)[subKey as keyof ExchangeAmount]
-      bValue = (b[key as keyof NormalizedTransaction] as ExchangeAmount)[subKey as keyof ExchangeAmount]
-    } else {
-      aValue = a[sortKey as keyof NormalizedTransaction]
-      bValue = b[sortKey as keyof NormalizedTransaction]
+  const loadData = async () => {
+    if (transactions.length > 0) {
+      console.log(
+        "loadData called when transactions already loaded... skipping until a force refresh"
+      );
+      return;
     }
 
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
-    return 0
-  })
+    try {
+      const response = await fetch("http://localhost:90/api/data");
+      const newData: NormalizedTransaction[] = await response.json();
+      setTransactions(newData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    let aValue: any;
+    let bValue: any;
+
+    if (sortKey.includes(".")) {
+      const [key, subKey] = sortKey.split(".");
+      aValue = (a[key as keyof NormalizedTransaction] as ExchangeAmount)[
+        subKey as keyof ExchangeAmount
+      ];
+      bValue = (b[key as keyof NormalizedTransaction] as ExchangeAmount)[
+        subKey as keyof ExchangeAmount
+      ];
+    } else {
+      aValue = a[sortKey as keyof NormalizedTransaction];
+      bValue = b[sortKey as keyof NormalizedTransaction];
+    }
+
+    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
 
   const toggleSort = (key: SortKey) => {
     if (key === sortKey) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortKey(key)
-      setSortOrder("asc")
+      setSortKey(key);
+      setSortOrder("asc");
     }
-  }
+  };
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>
+            <Button variant="ghost" onClick={() => toggleSort("timestamp")}>
+              Transaction ID <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </TableHead>
           <TableHead>
             <Button variant="ghost" onClick={() => toggleSort("timestamp")}>
               Date <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -105,12 +143,10 @@ export function TransactionsTable() {
             </Button>
           </TableHead>
           <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("source")}>
-              Source <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("transactionAmountFiat.amount")}>
+            <Button
+              variant="ghost"
+              onClick={() => toggleSort("transactionAmountFiat.amount")}
+            >
               Amount (Fiat) <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </TableHead>
@@ -120,13 +156,24 @@ export function TransactionsTable() {
             </Button>
           </TableHead>
           <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("assetAmount.amount")}>
+            <Button
+              variant="ghost"
+              onClick={() => toggleSort("assetAmount.amount")}
+            >
               Asset Amount <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </TableHead>
           <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("assetValueFiat.amount")}>
+            <Button
+              variant="ghost"
+              onClick={() => toggleSort("assetValueFiat.amount")}
+            >
               Asset Value (Fiat) <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </TableHead>
+          <TableHead>
+            <Button variant="ghost" onClick={() => toggleSort("source")}>
+              Source <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </TableHead>
           <TableHead>
@@ -140,13 +187,14 @@ export function TransactionsTable() {
       <TableBody>
         {sortedTransactions.map((transaction) => (
           <TableRow key={transaction.id}>
+            <TableCell>{transaction.id}</TableCell>
             <TableCell>{transaction.timestampText}</TableCell>
             <TableCell>{transaction.type}</TableCell>
-            <TableCell>{transaction.source}</TableCell>
             <TableCell>{`${transaction.transactionAmountFiat.amount} ${transaction.transactionAmountFiat.unit}`}</TableCell>
             <TableCell>{`${transaction.fee.amount} ${transaction.fee.unit}`}</TableCell>
             <TableCell>{`${transaction.assetAmount.amount} ${transaction.assetAmount.unit}`}</TableCell>
             <TableCell>{`${transaction.assetValueFiat.amount} ${transaction.assetValueFiat.unit}`}</TableCell>
+            <TableCell>{transaction.source}</TableCell>
             <TableCell>{transaction.filedWithIRS ? "Yes" : "No"}</TableCell>
             <TableCell>
               <DropdownMenu>
@@ -158,7 +206,11 @@ export function TransactionsTable() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(transaction.id)}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigator.clipboard.writeText(transaction.id)
+                    }
+                  >
                     Copy transaction ID
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -171,6 +223,5 @@ export function TransactionsTable() {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
-
