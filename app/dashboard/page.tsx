@@ -1,17 +1,47 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Overview } from "@/components/overview"
-import { RecentTransactions } from "@/components/recent-transactions"
-import { CsvUploader } from "@/components/csv-uploader"
-import { CsvDownloader } from "@/components/csv-downloader"
-import { ComingSoon } from "@/components/coming-soon"
-import { TransactionsTable } from "@/components/transactions-table"
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Overview } from "@/components/overview";
+import { RecentTransactions } from "@/components/recent-transactions";
+import { CsvUploader } from "@/components/csv-uploader";
+import { CsvDownloader } from "@/components/csv-downloader";
+import { ComingSoon } from "@/components/coming-soon";
+import { TransactionsTable } from "@/components/transactions-table";
+import { useEffect, useState } from "react";
+import { ExchangeAmount } from "@/models/transactions";
 
 export default function DashboardPage() {
+  const [portfolioValue, setPortfolioValue] = useState<ExchangeAmount>();
+
+  useEffect(() => {
+    loadPortfolioData();
+  }, []);
+
+  const loadPortfolioData = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:90/api/portfolio_value/USD"
+      );
+      const newData: ExchangeAmount = await response.json();
+      setPortfolioValue(newData);
+    } catch (error) {
+      console.error("Error loading portfolio value:", error);
+    }
+  };
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight gradient-bg text-transparent bg-clip-text">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight gradient-bg text-transparent bg-clip-text">
+          Dashboard
+        </h2>
       </div>
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
@@ -25,7 +55,9 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Portfolio Value
+                </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -40,13 +72,24 @@ export default function DashboardPage() {
                 </svg>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$45,231.89</div>
-                <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                <div className="text-2xl font-bold">
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: portfolioValue?.unit || "USD",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(portfolioValue?.amount || 0)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  +20.1% from last month [FAKE]
+                </p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Assets
+                </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -64,12 +107,16 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +180.1% from last month
+                </p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Transactions
+                </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -86,12 +133,16 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">120</div>
-                <p className="text-xs text-muted-foreground">+19% from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +19% from last month
+                </p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Assets</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Active Assets
+                </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -107,7 +158,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">+201 since last hour</p>
+                <p className="text-xs text-muted-foreground">
+                  +201 since last hour
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -123,7 +176,9 @@ export default function DashboardPage() {
             <Card className="card col-span-3">
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>You made 265 transactions this month.</CardDescription>
+                <CardDescription>
+                  You made 265 transactions this month.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RecentTransactions />
@@ -134,7 +189,9 @@ export default function DashboardPage() {
             <Card className="card">
               <CardHeader>
                 <CardTitle>CSV Uploader</CardTitle>
-                <CardDescription>Upload your transaction CSV files here.</CardDescription>
+                <CardDescription>
+                  Upload your transaction CSV files here.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <CsvUploader />
@@ -143,7 +200,9 @@ export default function DashboardPage() {
             <Card className="card">
               <CardHeader>
                 <CardTitle>CSV Downloader</CardTitle>
-                <CardDescription>Download your normalized transactions as CSV.</CardDescription>
+                <CardDescription>
+                  Download your normalized transactions as CSV.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <CsvDownloader />
@@ -155,7 +214,9 @@ export default function DashboardPage() {
           <Card className="card">
             <CardHeader>
               <CardTitle>All Transactions</CardTitle>
-              <CardDescription>A comprehensive list of all your cryptocurrency transactions.</CardDescription>
+              <CardDescription>
+                A comprehensive list of all your cryptocurrency transactions.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <TransactionsTable />
@@ -163,7 +224,10 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
         <TabsContent value="analytics" className="space-y-4">
-          <ComingSoon title="Analytics" description="Gain insights into your cryptocurrency portfolio performance." />
+          <ComingSoon
+            title="Analytics"
+            description="Gain insights into your cryptocurrency portfolio performance."
+          />
         </TabsContent>
         <TabsContent value="notifications" className="space-y-4">
           <ComingSoon
@@ -173,6 +237,5 @@ export default function DashboardPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-
