@@ -84,7 +84,7 @@ export function TransactionsTable() {
     }
 
     try {
-      const response = await fetch("http://localhost:90/api/data");
+      const response = await fetch("http://localhost:90/api/data/transactions");
       const newData: NormalizedTransaction[] = await response.json();
       setTransactions(newData);
     } catch (error) {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export function CsvDownloader() {
   const handleDownload = async () => {
     try {
-      const response = await fetch("http://localhost:90/api/download", {
+      const response = await fetch("http://localhost:90/api/data/download", {
         method: "GET",
       });
 
