@@ -18,46 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
-  type NormalizedTransaction,
-  TransactionSource,
-  NormalizedTransactionType,
-  type ExchangeAmount,
-} from "@/models/transactions";
-
-// Mock data
-const transactions: NormalizedTransaction[] = [
-  {
-    id: "1",
-    source: TransactionSource.COINBASE_PRO_FILL,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 1000, unit: "USD" },
-    fee: { amount: 10, unit: "USD" },
-    assetAmount: { amount: 0.05, unit: "BTC" },
-    assetValueFiat: { amount: 990, unit: "USD" },
-    timestamp: new Date("2023-06-01T10:00:00Z"),
-    timestampText: "2023-06-01 10:00:00",
-    address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    notes: "Bought Bitcoin",
-    filedWithIRS: false,
-  },
-  {
-    id: "2",
-    source: TransactionSource.COINBASE_STANDARD,
-    type: NormalizedTransactionType.SELL,
-    transactionAmountFiat: { amount: 500, unit: "USD" },
-    fee: { amount: 5, unit: "USD" },
-    assetAmount: { amount: 0.025, unit: "BTC" },
-    assetValueFiat: { amount: 495, unit: "USD" },
-    timestamp: new Date("2023-06-02T14:30:00Z"),
-    timestampText: "2023-06-02 14:30:00",
-    address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    notes: "Sold Bitcoin",
-    filedWithIRS: true,
-  },
-  // Add more mock transactions as needed
-];
+  ArrowUpDown,
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { type NormalizedTransaction } from "@/models/transactions";
 
 type SortKey =
   | keyof NormalizedTransaction
@@ -66,53 +33,41 @@ type SortKey =
   | "assetAmount.amount"
   | "assetValueFiat.amount";
 
+interface PaginationResponse {
+  data: NormalizedTransaction[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export function TransactionsTable() {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("timestamp");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [currentPage, pageSize, sortKey, sortOrder]);
 
   const loadData = async () => {
-    if (transactions.length > 0) {
-      console.log(
-        "loadData called when transactions already loaded... skipping until a force refresh"
-      );
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:90/api/data/transactions");
-      const newData: NormalizedTransaction[] = await response.json();
-      setTransactions(newData);
+      const response = await fetch(
+        `http://192.168.68.75:3090/api/data/transactions?page=${currentPage}&pageSize=${pageSize}&sortBy=${sortKey}&sortOrder=${sortOrder}`
+      );
+      const result: PaginationResponse = await response.json();
+      setTransactions(result.data);
+      setTotalItems(result.total);
     } catch (error) {
       console.error("Error loading data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const sortedTransactions = [...transactions].sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
-
-    if (sortKey.includes(".")) {
-      const [key, subKey] = sortKey.split(".");
-      aValue = (a[key as keyof NormalizedTransaction] as ExchangeAmount)[
-        subKey as keyof ExchangeAmount
-      ];
-      bValue = (b[key as keyof NormalizedTransaction] as ExchangeAmount)[
-        subKey as keyof ExchangeAmount
-      ];
-    } else {
-      aValue = a[sortKey as keyof NormalizedTransaction];
-      bValue = b[sortKey as keyof NormalizedTransaction];
-    }
-
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
 
   const toggleSort = (key: SortKey) => {
     if (key === sortKey) {
@@ -121,107 +76,159 @@ export function TransactionsTable() {
       setSortKey(key);
       setSortOrder("asc");
     }
+    setCurrentPage(1); // Reset to first page when sorting changes
+  };
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("timestamp")}>
-              Transaction ID <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("timestamp")}>
-              Date <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("type")}>
-              Type <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button
-              variant="ghost"
-              onClick={() => toggleSort("transactionAmountFiat.amount")}
-            >
-              Amount (Fiat) <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("fee.amount")}>
-              Fee <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button
-              variant="ghost"
-              onClick={() => toggleSort("assetAmount.amount")}
-            >
-              Asset Amount <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button
-              variant="ghost"
-              onClick={() => toggleSort("assetValueFiat.amount")}
-            >
-              Asset Value (Fiat) <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("source")}>
-              Source <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={() => toggleSort("filedWithIRS")}>
-              Filed with IRS <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedTransactions.map((transaction) => (
-          <TableRow key={transaction.id}>
-            <TableCell>{transaction.id}</TableCell>
-            <TableCell>{transaction.timestampText}</TableCell>
-            <TableCell>{transaction.type}</TableCell>
-            <TableCell>{`${transaction.transactionAmountFiat.amount} ${transaction.transactionAmountFiat.unit}`}</TableCell>
-            <TableCell>{`${transaction.fee.amount} ${transaction.fee.unit}`}</TableCell>
-            <TableCell>{`${transaction.assetAmount.amount} ${transaction.assetAmount.unit}`}</TableCell>
-            <TableCell>{`${transaction.assetValueFiat.amount} ${transaction.assetValueFiat.unit}`}</TableCell>
-            <TableCell>{transaction.source}</TableCell>
-            <TableCell>{transaction.filedWithIRS ? "Yes" : "No"}</TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      navigator.clipboard.writeText(transaction.id)
-                    }
-                  >
-                    Copy transaction ID
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>View details</DropdownMenuItem>
-                  <DropdownMenuItem>Edit transaction</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("timestamp")} className="text-xs">
+                Transaction ID <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("timestamp")} className="text-xs">
+                Date <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("type")} className="text-xs">
+                Type <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("transactionAmountFiat.amount")} className="text-xs">
+                Amount (Fiat) <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("fee.amount")} className="text-xs">
+                Fee <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("assetAmount.amount")} className="text-xs">
+                Asset Amount <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("assetValueFiat.amount")} className="text-xs">
+                Asset Value (Fiat) <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("source")} className="text-xs">
+                Source <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">
+              <Button variant="ghost" onClick={() => toggleSort("filedWithIRS")} className="text-xs">
+                Filed with IRS <ArrowUpDown className="ml-2 h-3 w-3" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-xs">Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center text-xs">
+                Loading...
+              </TableCell>
+            </TableRow>
+          ) : transactions.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center text-xs">
+                No transactions found
+              </TableCell>
+            </TableRow>
+          ) : (
+            transactions.map((transaction) => (
+              <TableRow key={transaction.id}>
+                <TableCell className="text-xs">{transaction.id}</TableCell>
+                <TableCell className="text-xs">{transaction.timestampText}</TableCell>
+                <TableCell className="text-xs">{transaction.type}</TableCell>
+                <TableCell className="text-xs">{`${transaction.transactionAmountFiat.amount} ${transaction.transactionAmountFiat.unit}`}</TableCell>
+                <TableCell className="text-xs">{`${transaction.fee.amount} ${transaction.fee.unit}`}</TableCell>
+                <TableCell className="text-xs">{`${transaction.assetAmount.amount} ${transaction.assetAmount.unit}`}</TableCell>
+                <TableCell className="text-xs">{`${transaction.assetValueFiat.amount} ${transaction.assetValueFiat.unit}`}</TableCell>
+                <TableCell className="text-xs">{transaction.source}</TableCell>
+                <TableCell className="text-xs">{transaction.filedWithIRS ? "Yes" : "No"}</TableCell>
+                <TableCell className="text-xs">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-6 w-6 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="text-xs">
+                      <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
+                      <DropdownMenuItem
+                        onClick={() => navigator.clipboard.writeText(transaction.id)}
+                        className="text-xs"
+                      >
+                        Copy transaction ID
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-xs">View details</DropdownMenuItem>
+                      <DropdownMenuItem className="text-xs">Edit transaction</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      <div className="flex items-center justify-between px-2">
+        <div className="text-xs text-gray-500">
+          Showing {transactions.length} of {totalItems} transactions
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className="text-xs"
+          >
+            <ChevronLeft className="h-3 w-3" />
+            Previous
+          </Button>
+          <div className="text-xs">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="text-xs"
+          >
+            Next
+            <ChevronRight className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

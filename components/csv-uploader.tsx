@@ -25,7 +25,7 @@ export function CsvUploader() {
     });
 
     try {
-      const response = await fetch("http://localhost:90/api/data/upload", {
+      const response = await fetch("http://192.168.68.75:3090/api/data/upload", {
         method: "POST",
         body: formData,
       });

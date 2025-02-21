@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const loadPortfolioData = async () => {
     try {
       const response = await fetch(
-        "http://localhost:90/api/metadata/portfolio_value/USD"
+        "http://192.168.68.75:3090/api/metadata/portfolio_value/USD"
       );
       const newData: ExchangeAmount = await response.json();
       setPortfolioValue(newData);
