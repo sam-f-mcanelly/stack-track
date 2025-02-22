@@ -29,8 +29,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Bought 1 BTC",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-1234567890",
   },
   {
     id: "2",
@@ -45,8 +43,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     notes: "Bought 2 ETH",
     filedWithIRS: false,
-    exchange: "Coinbase",
-    orderId: "cb-0987654321",
   },
   {
     id: "3",
@@ -61,8 +57,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Sold 0.5 BTC",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-2468101214",
   },
   {
     id: "4",
@@ -77,8 +71,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     notes: "Sold 1 ETH",
     filedWithIRS: false,
-    exchange: "Strike",
-    orderId: "st-1357924680",
   },
   {
     id: "11",
@@ -93,8 +85,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Bought 1 BTC",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-1234567890",
   },
   {
     id: "12",
@@ -109,8 +99,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     notes: "Bought 2 ETH",
     filedWithIRS: false,
-    exchange: "Coinbase",
-    orderId: "cb-0987654321",
   },
   {
     id: "13",
@@ -125,8 +113,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Sold 0.5 BTC",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-2468101214",
   },
   {
     id: "14",
@@ -141,8 +127,6 @@ const mockTransactions: NormalizedTransaction[] = [
     address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     notes: "Sold 1 ETH",
     filedWithIRS: false,
-    exchange: "Strike",
-    orderId: "st-1357924680",
   },
 ]
 
@@ -248,7 +232,7 @@ export default function TaxPage() {
     const newSellReportSummaries: Record<string, SellReportSummary> = {}
     selectedSellTransactions.forEach((sellId) => {
       newSellReportSummaries[sellId] = {
-        sellTransatcionId: sellId,
+        sellTransactionId: sellId,
         buyTransactionIds: sellToBuyTransactions[sellId],
         sellAmountFiat: {
           amount: 50000.0,
@@ -282,7 +266,7 @@ export default function TaxPage() {
     let aValue = a[sortKey as keyof typeof a]
     let bValue = b[sortKey as keyof typeof b]
 
-    if (typeof aValue === "string") {
+    if (typeof aValue === "string" && typeof bValue === "string") {
       aValue = aValue.toLowerCase()
       bValue = bValue.toLowerCase()
     }
