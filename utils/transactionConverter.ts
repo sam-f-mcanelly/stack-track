@@ -3,6 +3,7 @@ import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount }
 interface TableTransaction {
   id: string
   date: string
+  source: string
   asset: string
   amount: number
   price: number
@@ -35,6 +36,7 @@ export function convertToTableTransaction(transaction: NormalizedTransaction): T
   return {
     id: transaction.id,
     date: transaction.timestampText,
+    source: transaction.source,
     asset: transaction.assetAmount.unit,
     amount,
     price,

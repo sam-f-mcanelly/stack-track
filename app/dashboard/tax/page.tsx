@@ -30,105 +30,9 @@ const mockTransactions: NormalizedTransaction[] = [
     notes: "Bought 1 BTC",
     filedWithIRS: false,
   },
-  {
-    id: "2",
-    source: TransactionSource.COINBASE_STANDARD,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 3600, unit: "USD" },
-    fee: { amount: 3.6, unit: "USD" },
-    assetAmount: { amount: 2, unit: "ETH" },
-    assetValueFiat: { amount: 3600, unit: "USD" },
-    timestamp: new Date("2024-04-20T14:30:00Z"),
-    timestampText: "2024-04-20 14:30:00",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    notes: "Bought 2 ETH",
-    filedWithIRS: false,
-  },
-  {
-    id: "3",
-    source: TransactionSource.COINBASE_PRO_FILL,
-    type: NormalizedTransactionType.SELL,
-    transactionAmountFiat: { amount: 15000, unit: "USD" },
-    fee: { amount: 15, unit: "USD" },
-    assetAmount: { amount: 0.5, unit: "BTC" },
-    assetValueFiat: { amount: 15000, unit: "USD" },
-    timestamp: new Date("2024-05-10T09:45:00Z"),
-    timestampText: "2024-05-10 09:45:00",
-    address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    notes: "Sold 0.5 BTC",
-    filedWithIRS: false,
-  },
-  {
-    id: "4",
-    source: TransactionSource.STRIKE_MONTHLY,
-    type: NormalizedTransactionType.SELL,
-    transactionAmountFiat: { amount: 2200, unit: "USD" },
-    fee: { amount: 2.2, unit: "USD" },
-    assetAmount: { amount: 1, unit: "ETH" },
-    assetValueFiat: { amount: 2200, unit: "USD" },
-    timestamp: new Date("2024-06-12T16:20:00Z"),
-    timestampText: "2024-06-12 16:20:00",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    notes: "Sold 1 ETH",
-    filedWithIRS: false,
-  },
-  {
-    id: "11",
-    source: TransactionSource.COINBASE_PRO_FILL,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 28000, unit: "USD" },
-    fee: { amount: 28, unit: "USD" },
-    assetAmount: { amount: 1, unit: "BTC" },
-    assetValueFiat: { amount: 28000, unit: "USD" },
-    timestamp: new Date("2024-03-15T12:00:00Z"),
-    timestampText: "2024-03-15 12:00:00",
-    address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    notes: "Bought 1 BTC",
-    filedWithIRS: false,
-  },
-  {
-    id: "12",
-    source: TransactionSource.COINBASE_STANDARD,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 3600, unit: "USD" },
-    fee: { amount: 3.6, unit: "USD" },
-    assetAmount: { amount: 2, unit: "ETH" },
-    assetValueFiat: { amount: 3600, unit: "USD" },
-    timestamp: new Date("2024-04-20T14:30:00Z"),
-    timestampText: "2024-04-20 14:30:00",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    notes: "Bought 2 ETH",
-    filedWithIRS: false,
-  },
-  {
-    id: "13",
-    source: TransactionSource.COINBASE_PRO_FILL,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 15000, unit: "USD" },
-    fee: { amount: 15, unit: "USD" },
-    assetAmount: { amount: 0.5, unit: "BTC" },
-    assetValueFiat: { amount: 15000, unit: "USD" },
-    timestamp: new Date("2024-05-10T09:45:00Z"),
-    timestampText: "2024-05-10 09:45:00",
-    address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    notes: "Sold 0.5 BTC",
-    filedWithIRS: false,
-  },
-  {
-    id: "14",
-    source: TransactionSource.STRIKE_MONTHLY,
-    type: NormalizedTransactionType.BUY,
-    transactionAmountFiat: { amount: 2200, unit: "USD" },
-    fee: { amount: 2.2, unit: "USD" },
-    assetAmount: { amount: 1, unit: "ETH" },
-    assetValueFiat: { amount: 2200, unit: "USD" },
-    timestamp: new Date("2024-06-12T16:20:00Z"),
-    timestampText: "2024-06-12 16:20:00",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    notes: "Sold 1 ETH",
-    filedWithIRS: false,
-  },
-]
+];
+
+const TEMP_YEAR = 2024;
 
 export default function TaxPage() {
   const [sellTransactions, setSellTransactions] = useState<ReturnType<typeof convertToTableTransaction>[]>([])
@@ -142,18 +46,37 @@ export default function TaxPage() {
   // TODO: migrate other states to this
   const [sellReportSummaries, setSellReportSummaries] = useState<Record<string, SellReportSummary>>({})
 
-  useEffect(() => {
-    console.log("Initializing transactions...")
-    // In a real application, this would be an API call
-    const filteredSellTransactions = mockTransactions.filter((tx) => tx.type === NormalizedTransactionType.SELL)
-    const convertedSellTransactions = filteredSellTransactions.map(convertToTableTransaction)
-    setSellTransactions(convertedSellTransactions)
-    setTaxMethods(Object.fromEntries(convertedSellTransactions.map((tx) => [tx.id, tx.taxMethod])))
+  const fetchSellTransactions = async () => {
+  
+    try {
+      const response = await fetch(`http://192.168.68.75:3090/api/data/sells/${TEMP_YEAR}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const transactions: NormalizedTransaction[] = await response.json();
+      const convertedSellTransactions = transactions.map(convertToTableTransaction);
+      
+      setSellTransactions(convertedSellTransactions);
+      setTaxMethods(Object.fromEntries(
+        convertedSellTransactions.map((tx) => [tx.id, tx.taxMethod])
+      ));
 
-    const filteredBuyTransactions = mockTransactions.filter((tx) => tx.type === NormalizedTransactionType.BUY)
-    const convertedBuyTransactions = filteredBuyTransactions.map(convertToTableTransaction)
-    setBuyTransactions(convertedBuyTransactions)
-  }, [])
+      // Keep existing buy transactions logic for now
+      const filteredBuyTransactions = mockTransactions
+        .filter((tx) => tx.type === NormalizedTransactionType.BUY)
+        .map(convertToTableTransaction);
+      setBuyTransactions(filteredBuyTransactions);
+      
+    } catch (err) {
+      console.error('Failed to fetch sell transactions:', err);
+    }
+  };
+
+  useEffect(() => {
+      fetchSellTransactions();
+    }, []);
 
   useEffect(() => {
     console.log("sellTransactions updated:", sellTransactions)
@@ -399,8 +322,7 @@ export default function TaxPage() {
           initialTaxMethod={taxMethods[selectedSellTransaction] || "FIFO"}
           initialSelectedTransactions={sellToBuyTransactions[selectedSellTransaction] || []}
         />
-      )}
+      )};
     </div>
   )
 }
-

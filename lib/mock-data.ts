@@ -24,8 +24,6 @@ export const mockTransactionData: ExtendedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Initial BTC purchase",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-123456",
   },
   {
     id: "buy2",
@@ -40,8 +38,6 @@ export const mockTransactionData: ExtendedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Second BTC purchase",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-234567",
   },
   {
     id: "sell1",
@@ -56,8 +52,6 @@ export const mockTransactionData: ExtendedTransaction[] = [
     address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
     notes: "Partial BTC sale",
     filedWithIRS: false,
-    exchange: "Coinbase Pro",
-    orderId: "cb-345678",
     taxLotRelations: [
       { buyTransactionId: "buy1", sellTransactionId: "sell1", amount: 0.3 },
       { buyTransactionId: "buy2", sellTransactionId: "sell1", amount: 0.1 },
