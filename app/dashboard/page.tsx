@@ -8,14 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Overview } from "@/components/overview";
-import { RecentTransactions } from "@/components/recent-transactions";
 import { CsvUploader } from "@/components/csv-uploader";
 import { CsvDownloader } from "@/components/csv-downloader";
 import { ComingSoon } from "@/components/coming-soon";
 import { TransactionsTable } from "@/components/transactions-table";
 import { useEffect, useState } from "react";
 import { ExchangeAmount } from "@/models/transactions";
+import OverViewChart from "@/components/overview-chart";
 
 export default function DashboardPage() {
   const [portfolioValue, setPortfolioValue] = useState<ExchangeAmount>();
@@ -52,6 +51,32 @@ export default function DashboardPage() {
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="card">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total BTC
+                </CardTitle>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  className="h-4 w-4 text-muted-foreground"
+                >
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <path d="M2 10h20" />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">2.77558904</div>
+                <p className="text-xs text-muted-foreground">
+                  +2% from last month
+                </p>
+              </CardContent>
+            </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -87,7 +112,7 @@ export default function DashboardPage() {
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Assets
+                  Total Addresses
                 </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -108,32 +133,6 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">12</div>
                 <p className="text-xs text-muted-foreground">
                   +180.1% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Transactions
-                </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-muted-foreground"
-                >
-                  <rect width="20" height="14" x="2" y="5" rx="2" />
-                  <path d="M2 10h20" />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">120</div>
-                <p className="text-xs text-muted-foreground">
-                  +19% from last month
                 </p>
               </CardContent>
             </Card>
@@ -164,23 +163,12 @@ export default function DashboardPage() {
             </Card>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="card col-span-4">
+            <Card className="card col-span-10">
               <CardHeader>
-                <CardTitle>Overview</CardTitle>
+                <CardTitle>Chart</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <Overview />
-              </CardContent>
-            </Card>
-            <Card className="card col-span-3">
-              <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>
-                  You made 265 transactions this month.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RecentTransactions />
+                <OverViewChart />
               </CardContent>
             </Card>
           </div>
