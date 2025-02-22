@@ -24,14 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { type NormalizedTransaction } from "@/models/transactions";
-
-type SortKey =
-  | keyof NormalizedTransaction
-  | "transactionAmountFiat.amount"
-  | "fee.amount"
-  | "assetAmount.amount"
-  | "assetValueFiat.amount";
+import { NormalizedTransactionSortKey, type NormalizedTransaction } from "@/models/transactions";
 
 interface PaginationResponse {
   data: NormalizedTransaction[];
@@ -42,7 +35,7 @@ interface PaginationResponse {
 
 export function TransactionsTable() {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>("timestamp");
+  const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>("timestamp");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -69,7 +62,7 @@ export function TransactionsTable() {
     }
   };
 
-  const toggleSort = (key: SortKey) => {
+  const toggleSort = (key: NormalizedTransactionSortKey) => {
     if (key === sortKey) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {

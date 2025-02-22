@@ -33,3 +33,9 @@ export interface ExchangeAmount {
   unit: string
 }
 
+export type NormalizedTransactionSortKey =
+  | keyof NormalizedTransaction
+  | "transactionAmountFiat.amount"
+  | "fee.amount"
+  | "assetAmount.amount"
+  | "assetValueFiat.amount";

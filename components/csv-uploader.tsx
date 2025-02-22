@@ -4,7 +4,11 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-export function CsvUploader() {
+interface CsvUploaderProps {
+  onUploadSuccess?: () => void;
+}
+
+export function CsvUploader({ onUploadSuccess }: CsvUploaderProps) {
   const [files, setFiles] = useState<FileList | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +36,7 @@ export function CsvUploader() {
 
       if (response.ok) {
         alert("Files uploaded successfully.");
+        onUploadSuccess?.();
       } else {
         alert("Failed to upload files.");
       }

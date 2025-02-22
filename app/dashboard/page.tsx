@@ -193,7 +193,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CsvUploader />
+                <CsvUploader onUploadSuccess={loadPortfolioData} />
               </CardContent>
             </Card>
             <Card className="card">
