@@ -1,6 +1,6 @@
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 import type React from "react" // Import React
 import { AuthProvider } from "@/contexts/AuthContext"
 

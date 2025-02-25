@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { BuyTransactions } from "@/components/buy-transactions"
+import { BuyTransactions } from "@/components/tax/buy-transactions"
 import type { SellReportSummary } from "@/models/tax"
 import { type NormalizedTransaction, NormalizedTransactionType, TransactionSource } from "@/models/transactions"
-import { convertToTableTransaction } from "@/utils/transactionConverter"
-import { ReportSummary } from "@/components/report-summary"
+import { convertToTableTransaction } from "@/lib/utils/transactionConverter"
+import { ReportSummary } from "@/components/tax/report-summary"
 import { ArrowUpDown } from "lucide-react"
-import { TaxPageInstructions } from "@/components/tax-page-instructions"
+import { TaxPageInstructions } from "@/components/tax/tax-page-instructions"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Mock data - replace with actual API call

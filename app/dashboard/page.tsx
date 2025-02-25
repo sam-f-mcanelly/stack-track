@@ -8,13 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CsvUploader } from "@/components/csv-uploader";
-import { CsvDownloader } from "@/components/csv-downloader";
+import { CsvUploader } from "@/components/dashboard/csv-uploader";
+import { CsvDownloader } from "@/components/dashboard/csv-downloader";
 import { ComingSoon } from "@/components/coming-soon";
-import { TransactionsTable } from "@/components/transactions-table";
+import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { useEffect, useState } from "react";
 import { ExchangeAmount } from "@/models/transactions";
-import OverViewChart from "@/components/overview-chart";
+import OverViewChart from "@/components/dashboard/overview-chart";
 
 export default function DashboardPage() {
   const [portfolioValue, setPortfolioValue] = useState<ExchangeAmount>();

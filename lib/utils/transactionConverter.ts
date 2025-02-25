@@ -1,4 +1,4 @@
-import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount } from "../models/transactions"
+import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount } from "../../models/transactions"
 
 interface TableTransaction {
   id: string
@@ -12,15 +12,6 @@ interface TableTransaction {
   term: string
 }
 
-interface BuyTransaction {
-  id: number
-  date: string
-  amount: number
-  price: number
-  total: number
-  isShortTerm: boolean
-}
-
 export function convertToTableTransaction(transaction: NormalizedTransaction): TableTransaction {
   const isBuy = transaction.type === NormalizedTransactionType.BUY
   const isSell = transaction.type === NormalizedTransactionType.SELL
@@ -30,7 +21,7 @@ export function convertToTableTransaction(transaction: NormalizedTransaction): T
   }
 
   const amount = transaction.assetAmount.amount
-  const price = transaction.assetValueFiat.amount / amount
+  const price = transaction.transactionAmountFiat.amount / amount
   const total = transaction.transactionAmountFiat.amount
 
   return {
@@ -50,22 +41,5 @@ function getTermFromTimestamp(timestamp: Date): string {
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
   return timestamp < oneYearAgo ? "Long Term" : "Short Term"
-}
-
-export function convertToBuyTransaction(transaction: NormalizedTransaction): BuyTransaction {
-  if (transaction.type !== NormalizedTransactionType.BUY) {
-    throw new Error("Only BUY transactions can be converted to BuyTransaction")
-  }
-
-  const tableTransaction = convertToTableTransaction(transaction)
-
-  return {
-    id: Number.parseInt(tableTransaction.id),
-    date: tableTransaction.date,
-    amount: tableTransaction.amount,
-    price: tableTransaction.price,
-    total: tableTransaction.total,
-    isShortTerm: tableTransaction.term === "Short Term",
-  }
 }
 

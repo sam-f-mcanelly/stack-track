@@ -1,6 +1,6 @@
 "use client";
 import { Sidebar } from "@/components/sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import type React from "react"; // Added import for React

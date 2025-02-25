@@ -1,10 +1,10 @@
 "use client"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TransactionFlowchart } from "@/components/transaction-flowchart"
-import { TransactionDetails } from "@/components/transaction-details"
+import { TransactionFlowchart } from "@/components/tax/transaction-flowchart"
+import { TransactionDetails } from "@/components/tax/transaction-details"
 import { mockTransactionData } from "@/lib/mock-data"
-import { TaxReports } from "@/components/tax-reports"
+import { TaxReports } from "@/components/tax/tax-reports"
 import { toast } from "@/components/ui/use-toast"
 
 export default function ReportsPage() {

@@ -23,36 +23,45 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
+  Filter,
 } from "lucide-react";
-import { NormalizedTransactionSortKey, type NormalizedTransaction } from "@/models/transactions";
+import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/models/transactions";
+import { 
+  fetchTransactions, 
+  TRANSACTION_TYPES, 
+  ASSET_TYPES, 
+  PaginationResponse
+} from "@/api/transactions/transactions";
 
-interface PaginationResponse {
-  data: NormalizedTransaction[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export function TransactionsTable() {
+export function TransactionsTable(): JSX.Element {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
   const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>("timestamp");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Filter states
+  const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<NormalizedTransactionType[]>([]);
 
   useEffect(() => {
     loadData();
-  }, [currentPage, pageSize, sortKey, sortOrder]);
+  }, [currentPage, pageSize, sortKey, sortOrder, selectedAssets, selectedTypes]);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `http://192.168.68.75:3090/api/data/transactions?page=${currentPage}&pageSize=${pageSize}&sortBy=${sortKey}&sortOrder=${sortOrder}`
-      );
-      const result: PaginationResponse = await response.json();
+      const result: PaginationResponse = await fetchTransactions({
+        page: currentPage,
+        pageSize: pageSize,
+        sortBy: sortKey,
+        sortOrder: sortOrder,
+        assets: selectedAssets,
+        types: selectedTypes
+      });
+      
       setTransactions(result.data);
       setTotalItems(result.total);
     } catch (error) {
@@ -62,7 +71,7 @@ export function TransactionsTable() {
     }
   };
 
-  const toggleSort = (key: NormalizedTransactionSortKey) => {
+  const toggleSort = (key: NormalizedTransactionSortKey): void => {
     if (key === sortKey) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -74,20 +83,101 @@ export function TransactionsTable() {
 
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = (): void => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-  const handleNextPage = () => {
+  const handleNextPage = (): void => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
+  const handleAssetChange = (asset: string): void => {
+    // Toggle selection: add if not present, remove if present
+    if (selectedAssets.includes(asset)) {
+      setSelectedAssets(selectedAssets.filter(a => a !== asset));
+    } else {
+      setSelectedAssets([...selectedAssets, asset]);
+    }
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const handleTypeChange = (type: NormalizedTransactionType): void => {
+    // Toggle selection: add if not present, remove if present
+    if (selectedTypes.includes(type)) {
+      setSelectedTypes(selectedTypes.filter(t => t !== type));
+    } else {
+      setSelectedTypes([...selectedTypes, type]);
+    }
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Transactions</h2>
+        <div className="flex space-x-2">
+          {/* Asset Type Filter Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs">
+                Assets <Filter className="ml-2 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="text-xs">
+              <DropdownMenuLabel className="text-xs">Filter by Asset</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ASSET_TYPES.map((asset) => (
+                <DropdownMenuItem 
+                  key={asset} 
+                  className="text-xs flex items-center"
+                  onClick={() => handleAssetChange(asset)}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={selectedAssets.includes(asset)} 
+                    onChange={() => {}} 
+                    className="mr-2"
+                  />
+                  {asset}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Transaction Type Filter Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs">
+                Types <Filter className="ml-2 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="text-xs">
+              <DropdownMenuLabel className="text-xs">Filter by Type</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {TRANSACTION_TYPES.map((type) => (
+                <DropdownMenuItem 
+                  key={type} 
+                  className="text-xs flex items-center"
+                  onClick={() => handleTypeChange(type)}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={selectedTypes.includes(type)} 
+                    onChange={() => {}} 
+                    className="mr-2"
+                  />
+                  {type}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
