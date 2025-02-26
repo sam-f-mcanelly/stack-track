@@ -1,6 +1,6 @@
 import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount } from "../../models/transactions"
 
-interface TableTransaction {
+export interface TableTransaction {
   id: string
   date: string
   source: string

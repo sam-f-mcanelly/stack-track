@@ -9,19 +9,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
 import { NormalizedTransactionSortKey, NormalizedTransactionType } from "@/models/transactions"
 import { fetchTransactions } from "@/api/transactions/transactions"
-import { convertToTableTransaction } from "@/lib/utils/transactionConverter"
-
-interface TableTransaction {
-  id: string
-  date: string
-  source: string
-  asset: string
-  amount: number
-  price: number
-  total: number
-  taxMethod: string
-  term: string
-}
+import { convertToTableTransaction, TableTransaction } from "@/lib/utils/transactionConverter"
 
 interface BuyTransactionsProps {
   sellTransactionId: string
@@ -29,6 +17,10 @@ interface BuyTransactionsProps {
   onSave: (sellId: string, buyIds: string[], taxMethod: string) => void
   initialTaxMethod: string
   initialSelectedTransactions: string[]
+  // Added props for accurate profit calculations
+  sellAmount: number
+  sellTotal: number
+  sellPrice: number
 }
 
 export function BuyTransactions({
@@ -37,6 +29,9 @@ export function BuyTransactions({
   onSave,
   initialTaxMethod,
   initialSelectedTransactions,
+  sellAmount,
+  sellTotal,
+  sellPrice,
 }: BuyTransactionsProps): JSX.Element {
   const [taxMethod, setTaxMethod] = useState<string>(initialTaxMethod)
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>(initialSelectedTransactions)
@@ -51,9 +46,6 @@ export function BuyTransactions({
   // Sorting states
   const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>("timestamp")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  
-  // Sell transaction data (mock - replace with real data)
-  const sellTransaction = { total: 15000 } // Mock sell transaction data
 
   useEffect(() => {
     loadBuyTransactions()
@@ -62,12 +54,65 @@ export function BuyTransactions({
   useEffect(() => {
     console.log("Setting initial values:", { initialSelectedTransactions, initialTaxMethod })
     setSelectedTransactions(initialSelectedTransactions)
-    setTaxMethod(initialTaxMethod)
+    setTaxMethod(initialTaxMethod) // Still track the tax method internally, but don't show UI for it
   }, [initialSelectedTransactions, initialTaxMethod])
 
+  // Calculate metadata with actual sell transaction data using cached selections
+  const [selectedTransactionsCache, setSelectedTransactionsCache] = useState<TableTransaction[]>([])
+  
+  // Update the cache of selected transactions whenever selections change
   useEffect(() => {
-    console.log("selectedTransactions updated:", selectedTransactions)
-  }, [selectedTransactions])
+    // When selected transactions change, we need to fetch any that aren't in the current page
+    const fetchMissingSelectedTransactions = async () => {
+      // First filter out transactions we already have on current page
+      const currentPageSelectedTxs = tableTransactions.filter(tx => selectedTransactions.includes(tx.id))
+      
+      // Keep track of IDs we've found on the current page
+      const foundIds = new Set(currentPageSelectedTxs.map(tx => tx.id))
+      
+      // Find IDs that need to be fetched
+      const missingIds = selectedTransactions.filter(id => !foundIds.has(id))
+      
+      if (missingIds.length === 0) {
+        // All selected transactions are on the current page
+        setSelectedTransactionsCache(currentPageSelectedTxs)
+        return
+      }
+      
+      // We need to fetch the missing transactions
+      try {
+        // For each missing ID, we would ideally fetch it individually
+        // But for simplicity's sake, we'll fetch all transactions for this asset
+        // In a real app you might want a more efficient solution with a specific endpoint
+        const result = await fetchTransactions({
+          page: 1,
+          pageSize: 1000, // Large number to hopefully get all transactions
+          sortBy: "timestamp",
+          sortOrder: "asc",
+          assets: [asset],
+          types: [NormalizedTransactionType.BUY]
+        })
+        
+        const convertedTransactions = result.data.map(tx => {
+          const tableTx = convertToTableTransaction(tx)
+          tableTx.taxMethod = taxMethod
+          return tableTx
+        })
+        
+        // Filter down to just the missing transactions
+        const fetchedMissingTxs = convertedTransactions.filter(tx => missingIds.includes(tx.id))
+        
+        // Combine with the current page selections
+        setSelectedTransactionsCache([...currentPageSelectedTxs, ...fetchedMissingTxs])
+      } catch (error) {
+        console.error("Error fetching missing selected transactions:", error)
+        // At least use what we have on the current page
+        setSelectedTransactionsCache(currentPageSelectedTxs)
+      }
+    }
+    
+    fetchMissingSelectedTransactions()
+  }, [selectedTransactions, tableTransactions, asset])
 
   const loadBuyTransactions = async (): Promise<void> => {
     setIsLoading(true)
@@ -132,13 +177,32 @@ export function BuyTransactions({
     }
   }
 
-  // Calculate metadata
-  const selectedTxs = tableTransactions.filter((tx) => selectedTransactions.includes(tx.id))
+  // Calculate metadata with actual sell transaction data
+  const selectedTxs = selectedTransactionsCache
+  
+  // Cost basis: total cost of the buy transactions
   const totalBuyAmount = selectedTxs.reduce((sum, tx) => sum + tx.total, 0)
-  const profit = sellTransaction.total - totalBuyAmount
+  
+  // Total asset amount purchased from selected buy transactions
+  const totalBuyAssetAmount = selectedTxs.reduce((sum, tx) => sum + tx.amount, 0)
+  
+  // Calculate weighted average buy price if there are selected transactions
+  const avgBuyPrice = totalBuyAssetAmount > 0 ? totalBuyAmount / totalBuyAssetAmount : 0
+  
+  // Calculate profit based on sell price and avg buy price
+  const profit = sellTotal - totalBuyAmount
+  
+  // Calculate profit percentage based on cost basis
   const profitPercentage = totalBuyAmount > 0 ? (profit / totalBuyAmount) * 100 : 0
+  
+  // Determine if all selected transactions are long term
   const isLongTerm = selectedTxs.length > 0 ? selectedTxs.every((tx) => tx.term === "Long Term") : false
+  
   const totalPages = Math.ceil(totalItems / pageSize)
+  
+  // Calculate coverage percentage - how much of the sell amount is covered by selected buys
+  const coveragePercentage = (totalBuyAssetAmount / sellAmount) * 100
+  const isCoverageComplete = totalBuyAssetAmount >= sellAmount
 
   return (
     <Card>
@@ -157,26 +221,15 @@ export function BuyTransactions({
           <p>
             Profit: ${profit.toFixed(2)} ({profitPercentage.toFixed(2)}%)
           </p>
+          <p>
+            Coverage: {coveragePercentage.toFixed(2)}% 
+            {!isCoverageComplete && (
+              <span className="text-red-500 ml-2">
+                (Need {(sellAmount - totalBuyAssetAmount).toFixed(6)} more {asset})
+              </span>
+            )}
+          </p>
           <p>Tax Filing: {isLongTerm ? "Long Term" : "Short Term"}</p>
-          <div className="flex items-center space-x-2">
-            <label htmlFor="tax-method">Tax Method:</label>
-            <Select
-              value={taxMethod}
-              onValueChange={(value) => {
-                setTaxMethod(value)
-                onSave(sellTransactionId, selectedTransactions, value)
-              }}
-            >
-              <SelectTrigger id="tax-method" className="w-[180px]">
-                <SelectValue placeholder="Select tax method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="FIFO">FIFO</SelectItem>
-                <SelectItem value="LIFO">LIFO</SelectItem>
-                <SelectItem value="CUSTOM">Custom</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
         <Table>
           <TableHeader>

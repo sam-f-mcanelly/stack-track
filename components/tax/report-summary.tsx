@@ -130,7 +130,7 @@ export function ReportSummary({
                       <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 flex items-start">
                         <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
                         <p>
-                          Note: The buys selected do not cover the entirety of this sell. Please configure more buys.
+                          Note: The buys selected do not cover the entirety of this sell. The remainder will be treated as short term with a cost basis of 0
                         </p>
                       </div>
                     </div>
