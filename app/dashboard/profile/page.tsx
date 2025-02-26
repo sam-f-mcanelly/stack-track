@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { UpgradeModal } from "@/components/upgrade-modal"
+import { UpgradeModal } from "@/components/layout/upgrade-modal"
 
 const profileFormSchema = z.object({
   username: z

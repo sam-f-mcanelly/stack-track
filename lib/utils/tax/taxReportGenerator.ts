@@ -1,4 +1,4 @@
-import type { convertToTableTransaction } from "@/lib/utils/transactionConverter"
+import type { convertToTableTransaction } from "@/lib/utils/tax/transactionConverter"
 
 interface TaxReportInput {
   sellTransactions: {

@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
 import { NormalizedTransactionSortKey, NormalizedTransactionType } from "@/models/transactions"
-import { fetchTransactions } from "@/api/transactions/transactions"
-import { convertToTableTransaction, TableTransaction } from "@/lib/utils/transactionConverter"
+import { fetchTransactions } from "@/app/api/transactions/transactions"
+import { convertToTableTransaction, TableTransaction } from "@/lib/utils/tax/transactionConverter"
 
 interface BuyTransactionsProps {
   sellTransactionId: string

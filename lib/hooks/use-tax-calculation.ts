@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TableTransaction } from "@/lib/utils/transactionConverter";
+import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
 import { SellReportSummary } from "@/models/tax";
 import {
   TEMP_YEAR,
@@ -46,7 +46,7 @@ export function useTaxCalculation() {
     try {
       const transactions = await fetchSellTransactions();
       setSellTransactions(transactions);
-      
+
       // Initialize tax methods
       setTaxMethods(Object.fromEntries(
         transactions.map((tx) => [tx.id, tx.taxMethod])
@@ -70,7 +70,7 @@ export function useTaxCalculation() {
 
   // Toggle selection of a sell transaction
   const handleSelectSellTransaction = (id: string) => {
-    setSelectedSellTransactions((prev) => 
+    setSelectedSellTransactions((prev) =>
       prev.includes(id) ? prev.filter((txId) => txId !== id) : [...prev, id]
     );
   };
@@ -100,7 +100,7 @@ export function useTaxCalculation() {
       taxMethods,
       buyTransactionCache
     );
-    
+
     setSellReportSummaries(newSellReportSummaries);
   };
 
@@ -136,7 +136,7 @@ export function useTaxCalculation() {
   const getBuyTransactionsForSell = (sellId: string): TableTransaction[] => {
     const sellTx = sellTransactions.find(tx => tx.id === sellId);
     if (!sellTx) return [];
-    
+
     return buyTransactionCache[sellTx.asset] || [];
   };
 

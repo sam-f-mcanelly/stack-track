@@ -1,7 +1,7 @@
 import { NormalizedTransaction, NormalizedTransactionType, NormalizedTransactionSortKey } from "@/models/transactions";
-import { TableTransaction, convertToTableTransaction } from "@/lib/utils/transactionConverter";
+import { TableTransaction, convertToTableTransaction } from "@/lib/utils/tax/transactionConverter";
 import { SellReportSummary } from "@/models/tax";
-import { fetchTransactions } from "@/api/transactions/transactions";
+import { fetchTransactions } from "@/app/api/transactions/transactions";
 
 // Temporary year constant, should be made configurable in future
 export const TEMP_YEAR = 2024;
@@ -12,11 +12,11 @@ export const TEMP_YEAR = 2024;
 export const fetchSellTransactions = async (): Promise<TableTransaction[]> => {
   try {
     const response = await fetch(`http://192.168.68.75:3090/api/data/sells/${TEMP_YEAR}`);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const transactions: NormalizedTransaction[] = await response.json();
     return transactions.map(convertToTableTransaction);
   } catch (err) {
@@ -32,7 +32,7 @@ export const fetchBuyTransactionsForAssets = async (
   assets: string[]
 ): Promise<Record<string, TableTransaction[]>> => {
   const assetBuyTransactionsMap: Record<string, TableTransaction[]> = {};
-  
+
   for (const asset of assets) {
     try {
       // Fetch all buy transactions for this asset (with a large page size)
@@ -44,20 +44,20 @@ export const fetchBuyTransactionsForAssets = async (
         assets: [asset],
         types: [NormalizedTransactionType.BUY]
       });
-      
+
       // Convert and store in the cache
       const convertedTransactions = result.data.map(tx => {
         const tableTx = convertToTableTransaction(tx);
         return tableTx;
       });
-      
+
       assetBuyTransactionsMap[asset] = convertedTransactions;
     } catch (error) {
       console.error(`Error prefetching buy transactions for ${asset}:`, error);
       assetBuyTransactionsMap[asset] = [];
     }
   }
-  
+
   return assetBuyTransactionsMap;
 };
 
@@ -77,32 +77,32 @@ export const isSellComplete = (
     if (buyTransactions.length === 0) {
       return false;
     }
-    
+
     // Sum up the total amount of the asset from associated buy transactions
     const totalBuyAmount = buyTransactions.reduce((sum, tx) => sum + tx.amount, 0);
-    
+
     // The sell is complete if the buy transactions cover at least the sell amount
     return totalBuyAmount >= sellTransaction.amount;
   }
-  
+
   // For automatic tax methods (FIFO, LIFO), check if enough buy transactions exist
-  
+
   // Get all buy transactions for this asset
   const allBuysForAsset = [...assetBuyTransactions];
-  
+
   // Sort by date based on tax method
   if (taxMethod === "FIFO") {
     allBuysForAsset.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   } else if (taxMethod === "LIFO") {
     allBuysForAsset.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
-  
+
   // Calculate the total amount needed for all sells of this asset (including this one)
   const totalSellAmount = otherSellsOfSameAsset.reduce((sum, tx) => sum + tx.amount, 0) + sellTransaction.amount;
-  
+
   // Calculate the total available buy amount
   const totalAvailableBuyAmount = allBuysForAsset.reduce((sum, tx) => sum + tx.amount, 0);
-  
+
   // The sell is complete if enough buy transactions exist to cover all sells
   return totalAvailableBuyAmount >= totalSellAmount;
 };
@@ -118,66 +118,66 @@ export const generateSellReportSummaries = (
   buyTransactionCache: Record<string, TableTransaction[]>
 ): Record<string, SellReportSummary> => {
   const sellReportSummaries: Record<string, SellReportSummary> = {};
-  
+
   // First, group selected sell transactions by asset
   const sellsByAsset: Record<string, TableTransaction[]> = {};
-  
+
   selectedSellTransactions.forEach(sellId => {
     const sellTransaction = sellTransactions.find(tx => tx.id === sellId);
     if (!sellTransaction) return;
-    
+
     if (!sellsByAsset[sellTransaction.asset]) {
       sellsByAsset[sellTransaction.asset] = [];
     }
-    
+
     sellsByAsset[sellTransaction.asset].push(sellTransaction);
   });
-  
+
   // Now process each sell with awareness of other sells of the same asset
   selectedSellTransactions.forEach((sellId) => {
     const sellTransaction = sellTransactions.find(tx => tx.id === sellId);
-    
+
     if (!sellTransaction) return;
-    
+
     // Get the buy transactions associated with this sell
     const buyIds = sellToBuyTransactions[sellId] || [];
     const allBuyTransactions: TableTransaction[] = [];
-    
+
     // Get all buy transactions from the cache
     Object.values(buyTransactionCache).forEach(txList => {
       allBuyTransactions.push(...txList);
     });
-    
+
     // Get available buy transactions for this asset
     const assetBuyTransactions = buyTransactionCache[sellTransaction.asset] || [];
-    
+
     // Get other sells of the same asset (excluding this one)
     const otherSellsOfSameAsset = sellsByAsset[sellTransaction.asset]
       .filter(tx => tx.id !== sellId);
-    
+
     // Filter to just the ones associated with this sell
     const associatedBuyTransactions = allBuyTransactions.filter(
       tx => buyIds.includes(tx.id)
     );
-    
+
     // Calculate profit
     const buyTotal = associatedBuyTransactions.reduce(
       (sum, tx) => sum + tx.total, 0
     );
     const profitAmount = sellTransaction.total - buyTotal;
-    
+
     // Get the tax method for this sell
     const taxMethod = taxMethods[sellId] || "FIFO";
-    
+
     // Determine if the sell is complete based on tax method
     const isComplete = isSellComplete(
-      sellTransaction, 
+      sellTransaction,
       associatedBuyTransactions,
       assetBuyTransactions,
       otherSellsOfSameAsset,
       taxMethod
     );
-    
+
     sellReportSummaries[sellId] = {
       sellTransactionId: sellId,
       buyTransactionIds: buyIds,
@@ -201,7 +201,7 @@ export const generateSellReportSummaries = (
       isComplete: isComplete,
     };
   });
-  
+
   return sellReportSummaries;
 };
 

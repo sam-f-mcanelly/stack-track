@@ -31,7 +31,7 @@ import {
   TRANSACTION_TYPES, 
   ASSET_TYPES, 
   PaginationResponse
-} from "@/api/transactions/transactions";
+} from "@/app/api/transactions/transactions";
 
 export function TransactionsTable(): JSX.Element {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);

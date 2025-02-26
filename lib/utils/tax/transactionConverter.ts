@@ -1,4 +1,4 @@
-import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount } from "../../models/transactions"
+import { type NormalizedTransaction, NormalizedTransactionType, ExchangeAmount } from "../../../models/transactions"
 
 export interface TableTransaction {
   id: string

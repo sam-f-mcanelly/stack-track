@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TableTransaction } from "@/lib/utils/transactionConverter";
+import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
 import { ArrowUpDown } from "lucide-react";
 
 interface SellTransactionTableProps {
