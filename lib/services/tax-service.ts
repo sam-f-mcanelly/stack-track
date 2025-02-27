@@ -18,7 +18,7 @@ export const fetchSellTransactions = async (): Promise<TableTransaction[]> => {
     }
 
     const transactions: NormalizedTransaction[] = await response.json();
-    return transactions.map(convertToTableTransaction);
+    return transactions.filter(transaction => !transaction.filedWithIRS).map(convertToTableTransaction);
   } catch (err) {
     console.error('Failed to fetch sell transactions:', err);
     return [];
@@ -46,7 +46,9 @@ export const fetchBuyTransactionsForAssets = async (
       });
 
       // Convert and store in the cache
-      const convertedTransactions = result.data.map(tx => {
+      const convertedTransactions = result.data
+      .filter(tx => !tx.filedWithIRS)
+      .map(tx => {
         const tableTx = convertToTableTransaction(tx);
         return tableTx;
       });

@@ -14,7 +14,6 @@ export default function TaxPage() {
     sellToBuyTransactions,
     taxMethods,
     selectedSellTransactions,
-    buyTransactionCache,
     sortKey,
     sortOrder,
     sellReportSummaries,
@@ -53,7 +52,6 @@ export default function TaxPage() {
         sellTransactions={sellTransactions}
         sellToBuyTransactions={sellToBuyTransactions}
         taxMethods={taxMethods}
-        buyTransactions={Object.values(buyTransactionCache).flat()}
         onGenerateReport={handleGenerateReport}
         taxReports={sellReportSummaries}
       />

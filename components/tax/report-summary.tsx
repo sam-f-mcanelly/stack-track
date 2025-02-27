@@ -1,20 +1,19 @@
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import type { SellReportSummary } from "@/models/tax"
-import { ChevronDown, ChevronRight, InfoIcon, AlertCircle } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronRight, InfoIcon, AlertCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { TaxableEventResult } from "@/lib/services/tax-service-backend";
 
 interface ReportSummaryProps {
-  selectedSellTransactions: string[]
-  sellTransactions: any[]
-  sellToBuyTransactions: Record<string, string[]>
-  taxMethods: Record<string, string>
-  buyTransactions: any[]
-  onGenerateReport: () => void
-  taxReports: Record<string, SellReportSummary>
+  selectedSellTransactions: string[];
+  sellTransactions: any[];
+  sellToBuyTransactions: Record<string, string[]>;
+  taxMethods: Record<string, string>;
+  onGenerateReport: () => void;
+  taxReports: Record<string, TaxableEventResult>;
 }
 
 export function ReportSummary({
@@ -22,11 +21,10 @@ export function ReportSummary({
   sellTransactions,
   sellToBuyTransactions,
   taxMethods,
-  buyTransactions,
   onGenerateReport,
   taxReports,
 }: ReportSummaryProps) {
-  const [expandedSells, setExpandedSells] = useState<Record<string, boolean>>({})
+  const [expandedSells, setExpandedSells] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     console.log("ReportSummary props updated:", {
@@ -34,31 +32,30 @@ export function ReportSummary({
       sellTransactions,
       sellToBuyTransactions,
       taxMethods,
-      buyTransactions,
       taxReports,
-    })
-  }, [selectedSellTransactions, sellTransactions, sellToBuyTransactions, taxMethods, buyTransactions, taxReports])
+    });
+  }, [selectedSellTransactions, sellTransactions, sellToBuyTransactions, taxMethods, taxReports]);
 
   useEffect(() => {
     setExpandedSells((prevExpanded) => {
-      const newExpandedSells = { ...prevExpanded }
+      const newExpandedSells = { ...prevExpanded };
       selectedSellTransactions.forEach((id) => {
         if (!(id in newExpandedSells)) {
-          newExpandedSells[id] = false
+          newExpandedSells[id] = false;
         }
-      })
-      return newExpandedSells
-    })
-  }, [selectedSellTransactions])
+      });
+      return newExpandedSells;
+    });
+  }, [selectedSellTransactions]);
 
   const toggleExpand = (id: string) => {
-    console.log(`Toggling expand for sell transaction: ${id}`)
+    console.log(`Toggling expand for sell transaction: ${id}`);
     setExpandedSells((prev) => {
-      const newState = { ...prev, [id]: !prev[id] }
-      console.log("New expandedSells state:", newState)
-      return newState
-    })
-  }
+      const newState = { ...prev, [id]: !prev[id] };
+      console.log("New expandedSells state:", newState);
+      return newState;
+    });
+  };
 
   return (
     <Card className="mb-4">
@@ -76,18 +73,29 @@ export function ReportSummary({
           <p>Select a sell transaction to add it to the report</p>
         ) : (
           selectedSellTransactions.map((sellId) => {
-            const sellTx = sellTransactions.find((tx) => tx.id === sellId)
-            const taxReport = taxReports[sellId]
-            if (!sellTx) return null
+            const sellTx = sellTransactions.find((tx) => tx.id === sellId);
+            const taxReport = taxReports[sellId];
+            if (!sellTx) return null;
+
+            // Check if we have complete coverage
+            const isComplete = taxReport && taxReport.usedBuyTransactions.length > 0;
+            
+            // Calculate total amount covered by buy transactions
+            const totalCovered = taxReport?.usedBuyTransactions.reduce(
+              (sum, buyTx) => sum + buyTx.amountUsed, 0
+            ) || 0;
+
+            // Determine if coverage is complete
+            const hasSufficientCoverage = totalCovered >= sellTx.amount;
 
             return (
               <div
                 key={sellId}
                 className={cn(
                   "mb-4 rounded-lg p-4 relative overflow-hidden",
-                  taxReport?.isComplete
+                  hasSufficientCoverage
                     ? "complete-card border-l-4 border-l-green-500"
-                    : "incomplete-card border-2 border-red-500",
+                    : "incomplete-card border-2 border-red-500"
                 )}
               >
                 <div className="flex">
@@ -122,50 +130,55 @@ export function ReportSummary({
                     </div>
                     {taxReport && (
                       <div className="mt-2">
-                        <p>Taxable Gain: ${taxReport.profit.amount.toFixed(2)}</p>
+                        <p>Proceeds: ${taxReport.proceeds.amount.toFixed(2)}</p>
+                        <p>Cost Basis: ${taxReport.costBasis.amount.toFixed(2)}</p>
+                        <p>Taxable Gain: ${taxReport.gain.amount.toFixed(2)}</p>
                       </div>
                     )}
-                    {!taxReport?.isComplete && (
-                    <div className="ml-4 flex items-center">
-                      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 flex items-start">
-                        <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                        <p>
-                          Note: The buys selected do not cover the entirety of this sell. The remainder will be treated as short term with a cost basis of 0
-                        </p>
+                    {!hasSufficientCoverage && (
+                      <div className="ml-4 flex items-center mt-2">
+                        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 flex items-start">
+                          <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                          <p>
+                            Note: The buys selected do not cover the entirety of this sell. The remainder will be treated as short term with a cost basis of 0
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
-                {expandedSells[sellId] && (
+                {expandedSells[sellId] && taxReport && (
                   <Table className="mt-4">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
-                        <TableHead>Amount</TableHead>
+                        <TableHead>Amount Used</TableHead>
                         <TableHead>Price</TableHead>
-                        <TableHead>Total</TableHead>
+                        <TableHead>Cost Basis</TableHead>
+                        <TableHead>Tax Type</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(sellToBuyTransactions[sellId] || []).map((buyId) => {
-                        const buyTx = buyTransactions.find((tx) => tx.id.toString() === buyId)
-                        if (!buyTx) return null
-
+                      {taxReport.usedBuyTransactions.map((buyTx) => {
+                        const originalTx = buyTx.originalTransaction;
+                        
                         return (
-                          <TableRow key={buyId}>
-                            <TableCell>{buyTx.date}</TableCell>
-                            <TableCell>{buyTx.amount}</TableCell>
-                            <TableCell>${buyTx.price.toFixed(2)}</TableCell>
-                            <TableCell>${buyTx.total.toFixed(2)}</TableCell>
+                          <TableRow key={buyTx.transactionId}>
+                            <TableCell>{originalTx.timestampText}</TableCell>
+                            <TableCell>{buyTx.amountUsed.toFixed(6)} {originalTx.assetAmount.unit}</TableCell>
+                            <TableCell>
+                              ${(originalTx.assetValueFiat.amount / originalTx.assetAmount.amount).toFixed(2)}
+                            </TableCell>
+                            <TableCell>${buyTx.costBasis.toFixed(2)}</TableCell>
+                            <TableCell>{buyTx.taxType}</TableCell>
                           </TableRow>
-                        )
+                        );
                       })}
                     </TableBody>
                   </Table>
                 )}
               </div>
-            )
+            );
           })
         )}
       </CardContent>
@@ -193,6 +206,5 @@ export function ReportSummary({
         }
       `}</style>
     </Card>
-  )
+  );
 }
-

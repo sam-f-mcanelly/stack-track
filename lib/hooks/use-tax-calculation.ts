@@ -1,14 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
-import { SellReportSummary } from "@/models/tax";
-import {
-  TEMP_YEAR,
-  fetchSellTransactions,
-  fetchBuyTransactionsForAssets,
-  generateSellReportSummaries,
-  generateTaxReport,
-  sortTransactions
-} from "@/lib/services/tax-service";
+import { TEMP_YEAR, fetchSellTransactions, sortTransactions } from "@/lib/services/tax-service";
+import { requestTaxReport, processTaxReportResult, TaxableEventResult } from "@/lib/services/tax-service-backend";
 
 export function useTaxCalculation() {
   const [sellTransactions, setSellTransactions] = useState<TableTransaction[]>([]);
@@ -16,10 +9,9 @@ export function useTaxCalculation() {
   const [sellToBuyTransactions, setSellToBuyTransactions] = useState<Record<string, string[]>>({});
   const [taxMethods, setTaxMethods] = useState<Record<string, string>>({});
   const [selectedSellTransactions, setSelectedSellTransactions] = useState<string[]>([]);
-  const [buyTransactionCache, setBuyTransactionCache] = useState<Record<string, TableTransaction[]>>({});
   const [sortKey, setSortKey] = useState<string>("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [sellReportSummaries, setSellReportSummaries] = useState<Record<string, SellReportSummary>>({});
+  const [taxReportDetails, setTaxReportDetails] = useState<Record<string, TaxableEventResult>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Load initial sell transactions
@@ -27,18 +19,42 @@ export function useTaxCalculation() {
     loadSellTransactions();
   }, []);
 
-  // Pre-fetch buy transactions when sell transactions are loaded
-  useEffect(() => {
-    if (sellTransactions.length > 0) {
-      const uniqueAssets = [...new Set(sellTransactions.map(tx => tx.asset))];
-      loadBuyTransactionsForAssets(uniqueAssets);
+  // Function to fetch tax report when selections change
+  const fetchTaxReport = useCallback(async () => {
+    if (selectedSellTransactions.length === 0) {
+      // No tax report to fetch if no sell transactions are selected
+      return;
     }
-  }, [sellTransactions]);
 
-  // Update sell report summaries whenever relevant state changes
+    try {
+      setIsLoading(true);
+      const taxReportResult = await requestTaxReport(
+        selectedSellTransactions,
+        taxMethods,
+        sellToBuyTransactions
+      );
+      
+      const { sellToBuyTransactions: newSellToBuyTransactions, taxReportDetails: newTaxReportDetails } = 
+        processTaxReportResult(taxReportResult);
+      
+      // Update state with results from the API
+      setSellToBuyTransactions(prevState => ({
+        ...prevState,
+        ...newSellToBuyTransactions
+      }));
+      
+      setTaxReportDetails(newTaxReportDetails);
+    } catch (error) {
+      console.error("Error fetching tax report:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedSellTransactions, taxMethods, sellToBuyTransactions]);
+
+  // Fetch tax report whenever selected sells, tax methods, or buy transactions change
   useEffect(() => {
-    updateSellReportSummaries();
-  }, [selectedSellTransactions, sellToBuyTransactions, taxMethods, sellTransactions, buyTransactionCache]);
+    fetchTaxReport();
+  }, [selectedSellTransactions, taxMethods, sellToBuyTransactions, fetchTaxReport]);
 
   // Fetch sell transactions
   const loadSellTransactions = async () => {
@@ -55,16 +71,6 @@ export function useTaxCalculation() {
       console.error("Error loading sell transactions:", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Load buy transactions for specified assets
-  const loadBuyTransactionsForAssets = async (assets: string[]) => {
-    try {
-      const buyTransactions = await fetchBuyTransactionsForAssets(assets);
-      setBuyTransactionCache(buyTransactions);
-    } catch (error) {
-      console.error("Error loading buy transactions:", error);
     }
   };
 
@@ -91,26 +97,13 @@ export function useTaxCalculation() {
     setTaxMethods((prev) => ({ ...prev, [sellId]: taxMethod }));
   };
 
-  // Update the tax report summaries
-  const updateSellReportSummaries = () => {
-    const newSellReportSummaries = generateSellReportSummaries(
-      selectedSellTransactions,
-      sellTransactions,
-      sellToBuyTransactions,
-      taxMethods,
-      buyTransactionCache
-    );
-
-    setSellReportSummaries(newSellReportSummaries);
-  };
-
   // Generate the tax report
   const handleGenerateReport = async () => {
     try {
-      const result = await generateTaxReport(sellReportSummaries);
-      console.log("Tax report generated:", result);
-      // Here you would typically update the UI to show the new report
-      return result;
+      // The report is already generated and available in taxReportDetails
+      // This function could be enhanced to create a downloadable report or to send data to another endpoint
+      console.log("Tax report generated:", taxReportDetails);
+      return { success: true, report: taxReportDetails };
     } catch (error) {
       console.error("Error generating tax report:", error);
       throw error;
@@ -132,12 +125,28 @@ export function useTaxCalculation() {
     return sortTransactions(sellTransactions, sortKey, sortOrder);
   };
 
-  // Get buy transactions for a specific sell transaction
+  // Get buy transactions for a specific sell transaction - now from the API result
   const getBuyTransactionsForSell = (sellId: string): TableTransaction[] => {
-    const sellTx = sellTransactions.find(tx => tx.id === sellId);
-    if (!sellTx) return [];
-
-    return buyTransactionCache[sellTx.asset] || [];
+    const taxEventResult = taxReportDetails[sellId];
+    
+    if (!taxEventResult) return [];
+    
+    // Convert the API's used buy transactions to TableTransaction format
+    return taxEventResult.usedBuyTransactions.map(buyTx => {
+      const originalTx = buyTx.originalTransaction;
+      
+      return {
+        id: buyTx.transactionId,
+        date: originalTx.timestampText,
+        source: originalTx.source,
+        asset: originalTx.assetAmount.unit,
+        amount: buyTx.amountUsed, // Use the amount used from the tax calculation
+        price: originalTx.assetValueFiat.amount / originalTx.assetAmount.amount,
+        total: buyTx.costBasis, // Use the cost basis from the tax calculation
+        taxMethod: taxMethods[sellId] || "FIFO",
+        term: buyTx.taxType // Use the tax type from the calculation
+      };
+    });
   };
 
   return {
@@ -146,10 +155,9 @@ export function useTaxCalculation() {
     sellToBuyTransactions,
     taxMethods,
     selectedSellTransactions,
-    buyTransactionCache,
     sortKey,
     sortOrder,
-    sellReportSummaries,
+    sellReportSummaries: taxReportDetails, // Map the new tax report details to the old format
     isLoading,
     year: TEMP_YEAR,
     getSortedSellTransactions,

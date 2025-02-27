@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "CryptoSummit",
+  title: "Stack Track",
   description: "Track your crypto portfolio and simplify tax reporting",
 }
 
