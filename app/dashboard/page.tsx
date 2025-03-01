@@ -177,12 +177,6 @@ export default function DashboardPage() {
         </TabsContent>
         <TabsContent value="transactions" className="space-y-4">
           <Card className="card">
-            <CardHeader>
-              <CardTitle>All Transactions</CardTitle>
-              <CardDescription>
-                A comprehensive list of all your cryptocurrency transactions.
-              </CardDescription>
-            </CardHeader>
             <CardContent>
               <TransactionsTable />
             </CardContent>
