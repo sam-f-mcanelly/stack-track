@@ -8,13 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CsvUploader } from "@/components/dashboard/data/csv-uploader";
-import { CsvDownloader } from "@/components/dashboard/data/csv-downloader";
 import { ComingSoon } from "@/components/shared/coming-soon";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { useEffect, useState } from "react";
 import { ExchangeAmount } from "@/lib/models/transactions";
 import OverViewChart from "@/components/dashboard/charts/overview-chart";
+import { CsvManager } from "@/components/dashboard/data/csv-manager";
 
 export default function DashboardPage() {
   const [portfolioValue, setPortfolioValue] = useState<ExchangeAmount>();
@@ -172,29 +171,8 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            <Card className="card">
-              <CardHeader>
-                <CardTitle>CSV Uploader</CardTitle>
-                <CardDescription>
-                  Upload your transaction CSV files here.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CsvUploader onUploadSuccess={loadPortfolioData} />
-              </CardContent>
-            </Card>
-            <Card className="card">
-              <CardHeader>
-                <CardTitle>CSV Downloader</CardTitle>
-                <CardDescription>
-                  Download your normalized transactions as CSV.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CsvDownloader />
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <CsvManager onUploadSuccess={loadPortfolioData} />
           </div>
         </TabsContent>
         <TabsContent value="transactions" className="space-y-4">
