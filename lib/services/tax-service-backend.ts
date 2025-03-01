@@ -1,33 +1,5 @@
 // tax-api-service.ts
-import { TaxTreatment, TaxReportRequest, TaxableEventParameters } from "@/models/backend/tax/tax";
-import { NormalizedTransaction } from "@/models/transactions";
-
-export interface ExchangeAmount {
-  amount: number;
-  unit: string;
-}
-
-export interface UsedBuyTransaction {
-  transactionId: string;
-  amountUsed: number;
-  costBasis: number;
-  taxType: string; // Could be enum if we have the type definitions
-  originalTransaction: NormalizedTransaction;
-}
-
-export interface TaxableEventResult {
-  sellTransactionId: string;
-  proceeds: ExchangeAmount;
-  costBasis: ExchangeAmount;
-  gain: ExchangeAmount;
-  sellTransaction: NormalizedTransaction;
-  usedBuyTransactions: UsedBuyTransaction[];
-}
-
-export interface TaxReportResult {
-  requestId: string;
-  results: TaxableEventResult[];
-}
+import { TaxTreatment, TaxReportRequest, TaxableEventParameters, TaxReportResult, TaxableEventResult } from "@/models/backend/tax/tax";
 
 /**
  * Requests a tax report from the backend API
