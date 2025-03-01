@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
 import { TaxableEventResult, TaxType, UsedBuyTransaction } from "@/lib/models/backend/tax/tax";
 import { ExchangeAmount } from "@/lib/models/transactions";
+import { formatValue } from "@/lib/utils/formatter";
 
 interface ReportSummaryProps {
   selectedSellTransactions: string[];
@@ -252,12 +253,12 @@ export function ReportSummary({
                                 ? "bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800" 
                                 : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800"
                             )}>
-                              {taxReport.gain.amount > 0 ? "+" : ""}{formatCurrency(taxReport.gain)}
+                              {taxReport.gain.amount > 0 ? "+" : ""}{formatValue(taxReport.gain.amount, taxReport.gain.unit)}
                             </Badge>
                             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               @ {hasTaxReport 
-                                ? formatCurrency(taxReport.sellTransaction.assetValueFiat.amount / 
-                                    taxReport.sellTransaction.assetAmount.amount)
+                                ? formatValue(taxReport.sellTransaction.assetValueFiat.amount / 
+                                    taxReport.sellTransaction.assetAmount.amount, taxReport.sellTransaction.assetValueFiat.unit)
                                 : `$${sellTx.price.toFixed(2)}`}
                             </div>
                           </>
@@ -279,13 +280,13 @@ export function ReportSummary({
                           <div className="p-2 text-center">
                             <div className="text-xs text-slate-500 dark:text-slate-400">Proceeds</div>
                             <div className="font-medium">
-                              {formatCurrency(taxReport.proceeds)}
+                              {formatValue(taxReport.proceeds.amount, taxReport.proceeds.unit)}
                             </div>
                           </div>
                           <div className="p-2 text-center">
                             <div className="text-xs text-slate-500 dark:text-slate-400">Cost Basis</div>
                             <div className="font-medium">
-                              {formatCurrency(taxReport.costBasis)}
+                              {formatValue(taxReport.costBasis.amount, taxReport.costBasis.unit)}
                             </div>
                           </div>
                           <div className={cn(
@@ -305,7 +306,7 @@ export function ReportSummary({
                                   ? "text-red-600 dark:text-red-500" 
                                   : ""
                             )}>
-                              {formatCurrency(taxReport.gain)} ({gainPercentage.toFixed(1)}%)
+                              {formatValue(taxReport.gain.amount, taxReport.gain.unit)} ({gainPercentage.toFixed(1)}%)
                             </div>
                           </div>
                         </div>
@@ -320,7 +321,7 @@ export function ReportSummary({
                               <p className="text-xs text-orange-800 dark:text-orange-300">
                                 <strong>Uncovered:</strong> {taxReport.uncoveredSellAmount.amount.toFixed(6)} {taxReport.uncoveredSellAmount.unit}
                                 {taxReport.uncoveredSellValue && (
-                                  <span> ({formatCurrency(taxReport.uncoveredSellValue)})</span>
+                                  <span> ({formatValue(taxReport.uncoveredSellValue.amount, taxReport.uncoveredSellAmount.unit)})</span>
                                 )}
                               </p>
                             </div>
@@ -354,12 +355,13 @@ export function ReportSummary({
                                         {buyTx.amountUsed.amount.toFixed(6)}
                                       </TableCell>
                                       <TableCell className="py-1">
-                                        {formatCurrency(
-                                          originalTx.assetValueFiat.amount / originalTx.assetAmount.amount
+                                        {formatValue(
+                                          originalTx.assetValueFiat.amount,
+                                          originalTx.assetValueFiat.unit
                                         )}
                                       </TableCell>
                                       <TableCell className="py-1">
-                                        {formatCurrency(buyTx.costBasis)}
+                                        {formatValue(buyTx.costBasis.amount, buyTx.costBasis.unit)}
                                       </TableCell>
                                       <TableCell className="py-1">
                                         <Badge variant="outline" className={cn(

@@ -43,6 +43,7 @@ import {
   ASSET_TYPES, 
   PaginationResponse
 } from "@/app/api/transactions/transactions";
+import { formatValue } from "@/lib/utils/formatter";
 
 export function TransactionsTable(): JSX.Element {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
@@ -124,27 +125,6 @@ export function TransactionsTable(): JSX.Element {
       setSelectedTypes([...selectedTypes, type]);
     }
     setCurrentPage(1); // Reset to first page when filter changes
-  };
-
-  // Format values with appropriate currency symbols and decimal places
-  const formatValue = (value: number, unit: string) => {
-    if (unit.trim().toUpperCase() == "USD") {
-      return `$ ${value.toLocaleString('en-US', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-      })}`;
-    } else if (unit.trim().toUpperCase() == "BTC") {
-      return `₿ ${value.toLocaleString('en-US', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 8 
-      })}`;
-    } else {
-      // For other units, use generic formatting
-      return `${value.toLocaleString('en-US', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 8 
-      })} ${unit}`;
-    }
   };
 
   // Get sort icon with appropriate direction

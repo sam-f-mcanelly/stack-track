@@ -93,22 +93,6 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
     }
   };
 
-  // Get term badge
-  const getTermBadge = (term: string) => {
-    if (term === "Long Term") {
-      return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
-          Long Term
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
-        Short Term
-      </Badge>
-    );
-  };
-
   return (
     <div className="rounded-lg border dark:border-gray-700 overflow-hidden">
       <Table>
@@ -207,27 +191,11 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 Total {getSortIcon("total")}
               </Button>
             </TableHead>
-            <TableHead>
+                            <TableHead className="w-[160px]">
               <div className="text-xs font-medium flex items-center text-slate-600 dark:text-slate-400">
                 <Settings className="h-3.5 w-3.5 mr-1 inline-block" />
                 Tax Method
               </div>
-            </TableHead>
-            <TableHead>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => onToggleSort("term")}
-                className={cn(
-                  "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "term" 
-                    ? "text-slate-900 dark:text-slate-100" 
-                    : "text-slate-600 dark:text-slate-400"
-                )}
-              >
-                <Clock className="h-3.5 w-3.5 mr-1 inline-block" />
-                Term {getSortIcon("term")}
-              </Button>
             </TableHead>
             <TableHead className="w-[100px]">
               <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Action</span>
@@ -237,7 +205,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-24">
+              <TableCell colSpan={8} className="h-24">
                 <div className="flex flex-col items-center justify-center text-center py-6 space-y-2">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 dark:border-green-400"></div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Loading transactions...</p>
@@ -246,7 +214,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
             </TableRow>
           ) : transactions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-24">
+              <TableCell colSpan={8} className="h-24">
                 <div className="flex flex-col items-center justify-center py-6 text-center">
                   <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
                   <p className="text-slate-600 dark:text-slate-400 font-medium">No sell transactions found</p>
@@ -293,7 +261,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                     value={taxMethods[tx.id] || "FIFO"}
                     onValueChange={(value) => onTaxMethodChange(tx.id, value)}
                   >
-                    <SelectTrigger className="w-[90px] h-8 text-xs">
+                    <SelectTrigger className="w-[140px] h-8 text-xs">
                       <SelectValue placeholder="Select method">
                         <div className="flex items-center">
                           {getTaxMethodIcon(taxMethods[tx.id] || "FIFO")}
@@ -322,9 +290,6 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </TableCell>
-                <TableCell className="py-2">
-                  {getTermBadge(tx.term)}
                 </TableCell>
                 <TableCell className="py-2">
                   <Button

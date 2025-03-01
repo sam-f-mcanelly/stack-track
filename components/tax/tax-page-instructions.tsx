@@ -34,7 +34,7 @@ export function TaxPageInstructions() {
       </CardHeader>
       
       <CardContent className="px-4 pb-4 pt-0">
-        <Accordion type="single" collapsible defaultValue="instructions" className="w-full">
+        <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="instructions" className="border-none">
             <AccordionTrigger className="py-3 px-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
               <div className="flex items-center text-sm font-medium">
