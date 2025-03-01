@@ -1,67 +1,200 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { 
+  FileText, 
+  DollarSign, 
+  Calendar, 
+  ArrowUpDown, 
+  ListChecks, 
+  Clock, 
+  History, 
+  Settings, 
+  HelpCircle,
+  AlertTriangle
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function TaxPageInstructions() {
   return (
-    <Card className="relative">
-      <div className="absolute top-0 left-0 bg-green-500 text-white px-3 py-1 rounded-tl rounded-br text-sm font-semibold shadow-md">
-        Start Here
-      </div>
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Tax Report Generation Instructions</CardTitle>
-        <CardDescription>Follow these steps to generate your tax report for the current year</CardDescription>
+    <Card className="overflow-hidden border-t-4 border-t-green-500 shadow-md">
+      <CardHeader className="bg-gradient-to-r from-slate-100 to-white pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <FileText className="h-6 w-6 mr-2 text-green-600" />
+            <CardTitle>Tax Report Guide</CardTitle>
+          </div>
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3">
+            2024 Tax Year
+          </Badge>
+        </div>
+        <CardDescription className="mt-1">
+          Generate accurate tax reports for your cryptocurrency transactions in just a few steps
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="instructions">
-            <AccordionTrigger className="text-lg font-semibold">View Instructions</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              <div>
-                <p>
-                  This page is designed to help you generate tax reports for the current year based on your
-                  cryptocurrency transactions.
-                </p>
+      
+      <CardContent className="px-4 pb-4 pt-0">
+        <Accordion type="single" collapsible defaultValue="instructions" className="w-full">
+          <AccordionItem value="instructions" className="border-none">
+            <AccordionTrigger className="py-3 px-2 rounded-md hover:bg-slate-50 transition-colors">
+              <div className="flex items-center text-sm font-medium">
+                <ListChecks className="h-4 w-4 mr-2 text-green-600" />
+                Quick Start Guide
               </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Unreported Sell Transactions</h3>
-                <p>
-                  The table below shows a list of all unreported sell transactions for the current year. Each sell
-                  transaction needs to be configured and added to the report.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Steps to Generate a Report</h3>
-                <ol className="list-decimal pl-6 space-y-2">
-                  <li>Review the list of unreported sell transactions in the table below.</li>
-                  <li>Select all sell transactions you want to add to the report.</li>
-                  <li>Choose a tax lot selection method (FIFO, LIFO, or Custom) for each transaction.</li>
-                  <li>If using Custom, click configure to select buy transactions to associate with the sell transaction.</li>
-                  <li>Repeat for all relevant sell transactions.</li>
-                  <li>Click the "Generate Report" button to create your tax report.</li>
-                </ol>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Configuration Options</h3>
-                <p className="mb-2">When configuring a sell transaction, you have three tax lot selection methods:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>
-                    <span className="font-semibold">FIFO (First In, First Out):</span> The oldest buy transactions are
-                    used first.
-                  </li>
-                  <li>
-                    <span className="font-semibold">LIFO (Last In, First Out):</span> The most recent buy transactions
-                    are used first.
-                  </li>
-                  <li>
-                    <span className="font-semibold">Custom:</span> You can manually select any buy transactions. Takes precedence over others
-                  </li>
-                </ul>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-6 text-sm">
+                {/* Introduction */}
+                <div className="p-3 bg-slate-50 rounded-lg">
+                  <p>
+                    This tool helps you generate tax reports by matching sell transactions with their corresponding buy transactions
+                    using different accounting methods. Follow the steps below to prepare your cryptocurrency tax report.
+                  </p>
+                </div>
+                
+                {/* Steps */}
+                <div className="space-y-4">
+                  <h3 className="font-medium flex items-center text-base">
+                    <DollarSign className="h-4 w-4 mr-2 text-green-600" />
+                    Steps to Generate a Report
+                  </h3>
+                  
+                  <div className="ml-2 space-y-3">
+                    <div className="flex">
+                      <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold mr-3">1</div>
+                      <div>
+                        <p className="font-medium">Select transactions to report</p>
+                        <p className="text-slate-600 mt-1">Check the boxes next to the sell transactions you want to include in your tax report.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex">
+                      <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold mr-3">2</div>
+                      <div>
+                        <p className="font-medium">Choose tax methods for each transaction</p>
+                        <p className="text-slate-600 mt-1">Select FIFO, LIFO, or CUSTOM from the dropdown for each transaction.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex">
+                      <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold mr-3">3</div>
+                      <div>
+                        <p className="font-medium">Configure custom selections (if needed)</p>
+                        <p className="text-slate-600 mt-1">If using CUSTOM method, click Configure to select specific buy transactions.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex">
+                      <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold mr-3">4</div>
+                      <div>
+                        <p className="font-medium">Generate your report</p>
+                        <p className="text-slate-600 mt-1">Click the "Generate Report" button to calculate gains/losses and create your report.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tax Methods Explanation */}
+                <div>
+                  <h3 className="font-medium flex items-center text-base">
+                    <Settings className="h-4 w-4 mr-2 text-green-600" />
+                    Tax Methods Explained
+                  </h3>
+                  
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3 bg-white border rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Clock className="h-4 w-4 mr-2 text-blue-600" />
+                        <h4 className="font-medium">FIFO</h4>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-3 w-3 ml-1 text-slate-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="w-[200px]">First In, First Out - Oldest purchases are used first. Often results in lower taxes if asset has appreciated over time.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-slate-600 text-xs">Oldest buy transactions are used first. Typically results in more long-term gains.</p>
+                    </div>
+                    
+                    <div className="p-3 bg-white border rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <History className="h-4 w-4 mr-2 text-purple-600" />
+                        <h4 className="font-medium">LIFO</h4>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-3 w-3 ml-1 text-slate-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="w-[200px]">Last In, First Out - Newest purchases are used first. May result in more short-term gains.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-slate-600 text-xs">Newest buy transactions are used first. May minimize gains during market downturns.</p>
+                    </div>
+                    
+                    <div className="p-3 bg-white border rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <ArrowUpDown className="h-4 w-4 mr-2 text-amber-600" />
+                        <h4 className="font-medium">CUSTOM</h4>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-3 w-3 ml-1 text-slate-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="w-[200px]">Custom selection lets you manually choose which buy transactions to match with each sell.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-slate-600 text-xs">Manually select buy transactions. Offers most control over tax optimization.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Important notes */}
+                <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-r-lg">
+                  <div className="flex items-start">
+                    <AlertTriangle className="h-5 w-5 mr-2 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-orange-800">Important Tax Notes</h4>
+                      <ul className="mt-1 text-orange-800 space-y-1 list-disc pl-4">
+                        <li>If you don't have enough buy transactions to cover a sell, the uncovered portion will be treated as having a $0 cost basis.</li>
+                        <li>Assets held for more than one year qualify for long-term capital gains rates.</li>
+                        <li>This report is for informational purposes. Consult a tax professional for advice.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Report summary explanation */}
+                <div>
+                  <h3 className="font-medium flex items-center text-base">
+                    <Calendar className="h-4 w-4 mr-2 text-green-600" />
+                    Report Summary Features
+                  </h3>
+                  <p className="mt-2 text-slate-600">
+                    After generating your report, you'll see a summary of each transaction showing:
+                  </p>
+                  <ul className="mt-2 space-y-1 list-disc pl-4 text-slate-600">
+                    <li>Total proceeds from sales</li>
+                    <li>Cost basis of the assets sold</li>
+                    <li>Calculated gain or loss</li>
+                    <li>Tax type (short-term or long-term)</li>
+                    <li>Detailed breakdown of which buy transactions were used</li>
+                  </ul>
+                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
       </CardContent>
     </Card>
-  )
+  );
 }
-

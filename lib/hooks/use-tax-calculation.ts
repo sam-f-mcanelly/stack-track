@@ -66,6 +66,9 @@ export function useTaxCalculation() {
         currentTaxMethods,
         currentSellToBuyTransactions
       );
+
+      console.log("Tax report:");
+      console.log(taxReportResult);
       
       const { sellToBuyTransactions: newSellToBuyTransactions, taxReportDetails: newTaxReportDetails } = 
         processTaxReportResult(taxReportResult);
