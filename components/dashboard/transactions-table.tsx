@@ -25,7 +25,7 @@ import {
   ChevronRight,
   Filter,
 } from "lucide-react";
-import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/models/transactions";
+import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/lib/models/transactions";
 import { 
   fetchTransactions, 
   TRANSACTION_TYPES, 

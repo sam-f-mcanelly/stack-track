@@ -1,5 +1,5 @@
 // api/services/transactionService.ts
-import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/models/transactions";
+import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/lib/models/transactions";
 
 /**
  * Available transaction types based on the backend enum

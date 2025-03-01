@@ -13,7 +13,7 @@ import { CsvDownloader } from "@/components/dashboard/data/csv-downloader";
 import { ComingSoon } from "@/components/shared/coming-soon";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { useEffect, useState } from "react";
-import { ExchangeAmount } from "@/models/transactions";
+import { ExchangeAmount } from "@/lib/models/transactions";
 import OverViewChart from "@/components/dashboard/charts/overview-chart";
 
 export default function DashboardPage() {

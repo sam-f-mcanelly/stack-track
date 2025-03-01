@@ -1,4 +1,4 @@
-import { type ExchangeAmount } from "@/models/transactions"
+import { type ExchangeAmount } from "@/lib/models/transactions"
 
 /**
 * Used for the tax reports. Associates a sell with buys

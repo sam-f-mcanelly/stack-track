@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
 import { TEMP_YEAR, fetchSellTransactions, sortTransactions } from "@/lib/services/tax-service";
 import { requestTaxReport, processTaxReportResult } from "@/lib/services/tax-service-backend";
-import { TaxableEventResult } from "@/models/backend/tax/tax";
+import { TaxableEventResult } from "@/lib/models/backend/tax/tax";
 
 export function useTaxCalculation() {
   const [sellTransactions, setSellTransactions] = useState<TableTransaction[]>([]);
@@ -14,17 +14,17 @@ export function useTaxCalculation() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [taxReportDetails, setTaxReportDetails] = useState<Record<string, TaxableEventResult>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+
   // Track the current state snapshot to avoid dependency on the actual state objects
   const stateRef = useRef({
     selectedSellTransactions: [] as string[],
     taxMethods: {} as Record<string, string>,
     sellToBuyTransactions: {} as Record<string, string[]>
   });
-  
+
   // Track if a tax report fetch is needed
   const [needsFetch, setNeedsFetch] = useState<boolean>(false);
-  
+
   // Track if we're currently fetching to prevent concurrent fetches
   const isFetchingRef = useRef(false);
 
@@ -48,14 +48,14 @@ export function useTaxCalculation() {
       taxMethods: currentTaxMethods,
       sellToBuyTransactions: currentSellToBuyTransactions
     } = stateRef.current;
-    
+
     if (currentSelectedSellTransactions.length === 0 || isFetchingRef.current) {
       setNeedsFetch(false);
       return;
     }
 
     console.log("Fetching tax report");
-    
+
     // Set fetching flag to prevent concurrent fetches
     isFetchingRef.current = true;
     setIsLoading(true);
@@ -69,19 +69,19 @@ export function useTaxCalculation() {
 
       console.log("Tax report:");
       console.log(taxReportResult);
-      
-      const { sellToBuyTransactions: newSellToBuyTransactions, taxReportDetails: newTaxReportDetails } = 
+
+      const { sellToBuyTransactions: newSellToBuyTransactions, taxReportDetails: newTaxReportDetails } =
         processTaxReportResult(taxReportResult);
-      
+
       // Update state with results from the API - these won't trigger a new fetch
       // because we'll clear the needsFetch flag
       setSellToBuyTransactions(prevState => ({
         ...prevState,
         ...newSellToBuyTransactions
       }));
-      
+
       setTaxReportDetails(newTaxReportDetails);
-      
+
     } catch (error) {
       console.error("Error fetching tax report:", error);
     } finally {
@@ -120,13 +120,13 @@ export function useTaxCalculation() {
   const handleSelectSellTransaction = (id: string) => {
     console.log("Setting sell transactions");
     setSelectedSellTransactions((prev) => {
-      const newSelection = prev.includes(id) 
-        ? prev.filter((txId) => txId !== id) 
+      const newSelection = prev.includes(id)
+        ? prev.filter((txId) => txId !== id)
         : [...prev, id];
-      
+
       // Schedule a fetch after state update is applied
       setTimeout(() => setNeedsFetch(true), 0);
-      
+
       return newSelection;
     });
   };
@@ -135,10 +135,10 @@ export function useTaxCalculation() {
   const handleTaxMethodChange = (sellId: string, method: string) => {
     setTaxMethods((prev) => {
       const newMethods = { ...prev, [sellId]: method };
-      
+
       // Schedule a fetch after state update is applied
       setTimeout(() => setNeedsFetch(true), 0);
-      
+
       return newMethods;
     });
   };
@@ -153,7 +153,7 @@ export function useTaxCalculation() {
     // Need to update both at once
     setSellToBuyTransactions((prev) => ({ ...prev, [sellId]: buyIds }));
     setTaxMethods((prev) => ({ ...prev, [sellId]: taxMethod }));
-    
+
     // Schedule a fetch after both state updates are applied
     setTimeout(() => setNeedsFetch(true), 0);
   };
@@ -188,13 +188,13 @@ export function useTaxCalculation() {
   // Get buy transactions for a specific sell transaction - now from the API result
   const getBuyTransactionsForSell = (sellId: string): TableTransaction[] => {
     const taxEventResult = taxReportDetails[sellId];
-    
+
     if (!taxEventResult) return [];
-    
+
     // Convert the API's used buy transactions to TableTransaction format
     return taxEventResult.usedBuyTransactions.map(buyTx => {
       const originalTx = buyTx.originalTransaction;
-      
+
       return {
         id: buyTx.transactionId,
         date: originalTx.timestampText,

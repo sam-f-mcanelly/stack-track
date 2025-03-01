@@ -1,4 +1,4 @@
-import { type NormalizedTransaction, NormalizedTransactionType, TransactionSource } from "@/models/transactions"
+import { type NormalizedTransaction, NormalizedTransactionType, TransactionSource } from "@/lib/models/transactions"
 
 export interface TaxLotRelation {
   buyTransactionId: string

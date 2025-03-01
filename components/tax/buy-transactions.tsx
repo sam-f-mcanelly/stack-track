@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
-import { NormalizedTransactionSortKey, NormalizedTransactionType } from "@/models/transactions"
+import { NormalizedTransactionSortKey, NormalizedTransactionType } from "@/lib/models/transactions"
 import { fetchTransactions } from "@/app/api/transactions/transactions"
 import { convertToTableTransaction, TableTransaction } from "@/lib/utils/tax/transactionConverter"
 

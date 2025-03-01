@@ -1,5 +1,5 @@
 // tax-api-service.ts
-import { TaxTreatment, TaxReportRequest, TaxableEventParameters, TaxReportResult, TaxableEventResult } from "@/models/backend/tax/tax";
+import { TaxTreatment, TaxReportRequest, TaxableEventParameters, TaxReportResult, TaxableEventResult } from "@/lib/models/backend/tax/tax";
 
 /**
  * Requests a tax report from the backend API
@@ -21,10 +21,10 @@ export async function requestTaxReport(
   // Create taxable events for each selected sell transaction
   const taxableEvents: TaxableEventParameters[] = selectedSellTransactions.map((sellId) => {
     const taxMethod = taxMethods[sellId] || "FIFO";
-    
+
     // Only include buy transaction IDs if we're using CUSTOM tax method
     const buyIds = taxMethod === "CUSTOM" ? sellToBuyTransactions[sellId] : undefined;
-    
+
     return {
       sellId,
       taxTreatment: taxMethod as TaxTreatment,
@@ -47,11 +47,11 @@ export async function requestTaxReport(
       },
       body: JSON.stringify(taxReportRequest) // Send directly in the request body
     });
-  
+
     if (!response.ok) {
       throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
     }
-  
+
     return await response.json() as TaxReportResult;
   } catch (error) {
     console.error("Error requesting tax report:", error);
@@ -74,10 +74,10 @@ export function processTaxReportResult(taxReportResult: TaxReportResult): {
 
   taxReportResult.results.forEach(result => {
     const sellId = result.sellTransactionId;
-    
+
     // Extract buy transaction IDs
     sellToBuyTransactions[sellId] = result.usedBuyTransactions.map(buyTx => buyTx.transactionId);
-    
+
     // Store the full result for detailed rendering
     taxReportDetails[sellId] = result;
   });

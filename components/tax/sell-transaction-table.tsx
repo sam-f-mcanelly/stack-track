@@ -71,7 +71,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortKey === key) {
       return (
-        <Badge variant="outline" className="ml-1 p-0 h-5 w-5 flex items-center justify-center">
+        <Badge variant="outline" className="ml-1 p-0 h-5 w-5 flex items-center justify-center dark:border-gray-600">
           {sortOrder === "asc" ? "↑" : "↓"}
         </Badge>
       );
@@ -97,22 +97,22 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
   const getTermBadge = (term: string) => {
     if (term === "Long Term") {
       return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
           Long Term
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
         Short Term
       </Badge>
     );
   };
 
   return (
-    <div className="rounded-lg border overflow-hidden">
+    <div className="rounded-lg border dark:border-gray-700 overflow-hidden">
       <Table>
-        <TableHeader className="bg-slate-50">
+        <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
           <TableRow>
             <TableHead className="w-[40px] text-center">
               <TooltipProvider>
@@ -134,7 +134,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("date")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "date" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "date" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <Calendar className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -148,7 +150,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("asset")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "asset" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "asset" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <Tag className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -162,7 +166,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("amount")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "amount" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "amount" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <BarChart2 className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -176,7 +182,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("price")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "price" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "price" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <DollarSign className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -190,7 +198,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("total")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "total" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "total" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <DollarSign className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -198,7 +208,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
               </Button>
             </TableHead>
             <TableHead>
-              <div className="text-xs font-medium flex items-center text-slate-600">
+              <div className="text-xs font-medium flex items-center text-slate-600 dark:text-slate-400">
                 <Settings className="h-3.5 w-3.5 mr-1 inline-block" />
                 Tax Method
               </div>
@@ -210,7 +220,9 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 onClick={() => onToggleSort("term")}
                 className={cn(
                   "p-1 h-auto text-xs font-medium flex items-center",
-                  sortKey === "term" ? "text-slate-900" : "text-slate-600"
+                  sortKey === "term" 
+                    ? "text-slate-900 dark:text-slate-100" 
+                    : "text-slate-600 dark:text-slate-400"
                 )}
               >
                 <Clock className="h-3.5 w-3.5 mr-1 inline-block" />
@@ -218,7 +230,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
               </Button>
             </TableHead>
             <TableHead className="w-[100px]">
-              <span className="text-xs font-medium text-slate-600">Action</span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Action</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -227,8 +239,8 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
             <TableRow>
               <TableCell colSpan={9} className="h-24">
                 <div className="flex flex-col items-center justify-center text-center py-6 space-y-2">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
-                  <p className="text-sm text-slate-600">Loading transactions...</p>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 dark:border-green-400"></div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Loading transactions...</p>
                 </div>
               </TableCell>
             </TableRow>
@@ -236,30 +248,34 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
             <TableRow>
               <TableCell colSpan={9} className="h-24">
                 <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <Calendar className="h-8 w-8 text-slate-300 mb-2" />
-                  <p className="text-slate-600 font-medium">No sell transactions found</p>
-                  <p className="text-sm text-slate-500">There are no unreported sell transactions for {year}</p>
+                  <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">No sell transactions found</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-500">There are no unreported sell transactions for {year}</p>
                 </div>
               </TableCell>
             </TableRow>
           ) : (
             transactions.map((tx) => (
               <TableRow key={tx.id} className={cn(
-                selectedTransactions.includes(tx.id) ? "bg-green-50" : "",
-                "hover:bg-slate-50 transition-colors"
+                selectedTransactions.includes(tx.id) 
+                  ? "bg-green-50 dark:bg-green-900/20" 
+                  : "",
+                "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
               )}>
                 <TableCell className="py-2">
                   <Checkbox
                     checked={selectedTransactions.includes(tx.id)}
                     onCheckedChange={() => onSelectTransaction(tx.id)}
-                    className={selectedTransactions.includes(tx.id) ? "border-green-500 text-green-500" : ""}
+                    className={selectedTransactions.includes(tx.id) 
+                      ? "border-green-500 text-green-500 dark:border-green-500 dark:text-green-500" 
+                      : ""}
                   />
                 </TableCell>
                 <TableCell className="py-2 font-medium text-sm">
                   {formatDate(tx.date)}
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge variant="outline" className="font-medium">
+                  <Badge variant="outline" className="font-medium dark:border-gray-600">
                     {tx.asset}
                   </Badge>
                 </TableCell>
@@ -319,8 +335,8 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                     className={cn(
                       "h-8 text-xs px-2",
                       taxMethods[tx.id] === "CUSTOM" 
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "text-slate-500"
+                        ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+                        : "text-slate-500 dark:text-slate-400 dark:border-slate-600"
                     )}
                   >
                     <Settings className="h-3.5 w-3.5 mr-1" />

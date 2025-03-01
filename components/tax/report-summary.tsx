@@ -6,8 +6,8 @@ import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, DollarSign } from 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
-import { TaxableEventResult, TaxType, UsedBuyTransaction } from "@/models/backend/tax/tax";
-import { ExchangeAmount } from "@/models/transactions";
+import { TaxableEventResult, TaxType, UsedBuyTransaction } from "@/lib/models/backend/tax/tax";
+import { ExchangeAmount } from "@/lib/models/transactions";
 
 interface ReportSummaryProps {
   selectedSellTransactions: string[];
@@ -122,20 +122,21 @@ export function ReportSummary({
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-green-600" />
+              <DollarSign className="h-5 w-5 mr-2 text-green-600 dark:text-green-500" />
               Tax Report Summary
             </CardTitle>
             {selectedSellTransactions.length > 0 && taxReports && Object.keys(taxReports).length > 0 && (
               <div className="mt-1 flex items-center text-sm">
                 <div className="mr-4">
-                  <span className="text-slate-500">Total Proceeds:</span>
+                  <span className="text-slate-500 dark:text-slate-400">Total Proceeds:</span>
                   <span className="ml-1 font-semibold">${totalProceeds.toFixed(2)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500">Total Gain/Loss:</span>
+                  <span className="text-slate-500 dark:text-slate-400">Total Gain/Loss:</span>
                   <span className={cn(
                     "ml-1 font-semibold",
-                    totalGain > 0 ? "text-green-600" : totalGain < 0 ? "text-red-600" : ""
+                    totalGain > 0 ? "text-green-600 dark:text-green-500" : 
+                    totalGain < 0 ? "text-red-600 dark:text-red-500" : ""
                   )}>
                     ${totalGain.toFixed(2)}
                   </span>
@@ -145,7 +146,7 @@ export function ReportSummary({
           </div>
           <Button 
             onClick={handleGenerateReport} 
-            className="bg-green-600 hover:bg-green-700 text-white font-bold transition-all"
+            className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white font-bold transition-all"
             disabled={selectedSellTransactions.length === 0 || isGenerating}
             size="sm"
           >
@@ -156,8 +157,8 @@ export function ReportSummary({
       </CardHeader>
       <CardContent className="pt-2 px-3 pb-3">
         {selectedSellTransactions.length === 0 ? (
-          <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-            <p className="text-slate-500 text-sm">Select a sell transaction to add it to the report</p>
+          <div className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Select a sell transaction to add it to the report</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -192,12 +193,12 @@ export function ReportSummary({
                   className={cn(
                     "rounded border overflow-hidden transition-all duration-300",
                     isNewlyUpdated 
-                      ? "animate-pulse-light border-blue-400" 
+                      ? "animate-pulse-theme border-blue-400 dark:border-blue-600" 
                       : hasTaxReport && hasSufficientCoverage
-                        ? "border-l-3 border-l-green-500 border-t-gray-200 border-r-gray-200 border-b-gray-200" 
+                        ? "border-l-3 border-l-green-500 dark:border-l-green-600 border-t-gray-200 border-r-gray-200 border-b-gray-200 dark:border-t-gray-700 dark:border-r-gray-700 dark:border-b-gray-700" 
                         : hasTaxReport && !hasSufficientCoverage
-                          ? "border-orange-300"
-                          : "border-gray-200"
+                          ? "border-orange-300 dark:border-orange-600"
+                          : "border-gray-200 dark:border-gray-700"
                   )}
                 >
                   {/* Compact header - always visible */}
@@ -205,10 +206,10 @@ export function ReportSummary({
                     className={cn(
                       "py-2 px-3 cursor-pointer",
                       hasTaxReport && hasSufficientCoverage 
-                        ? "bg-gradient-to-r from-green-50 to-white" 
+                        ? "bg-gradient-to-r from-green-50 to-white dark:from-green-950/30 dark:to-transparent" 
                         : hasTaxReport && !hasSufficientCoverage
-                          ? "bg-gradient-to-r from-orange-50 to-white"
-                          : "bg-white"
+                          ? "bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/30 dark:to-transparent"
+                          : "bg-white dark:bg-transparent"
                     )}
                     onClick={() => toggleExpand(sellId)}
                   >
@@ -227,15 +228,15 @@ export function ReportSummary({
                                 : `${sellTx.amount} ${assetName}`}
                             </span>
                             {hasTaxReport && hasSufficientCoverage ? (
-                              <CheckCircle className="h-4 w-4 ml-1 text-green-500" />
+                              <CheckCircle className="h-4 w-4 ml-1 text-green-500 dark:text-green-400" />
                             ) : hasTaxReport && !hasSufficientCoverage ? (
-                              <AlertCircle className="h-4 w-4 ml-1 text-orange-500" />
+                              <AlertCircle className="h-4 w-4 ml-1 text-orange-500 dark:text-orange-400" />
                             ) : null}
                             {isNewlyUpdated && (
                               <Badge className="ml-1 text-xs py-0 px-1 h-5" variant="default">New</Badge>
                             )}
                           </div>
-                          <div className="text-xs text-slate-500 mt-0.5">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {hasTaxReport 
                               ? taxReport.sellTransaction.timestampText 
                               : sellTx.date} · {taxMethods[sellId]}
@@ -248,12 +249,12 @@ export function ReportSummary({
                             <Badge className={cn(
                               "text-xs",
                               taxReport.gain.amount > 0 
-                                ? "bg-green-500 hover:bg-green-600" 
-                                : "bg-red-500 hover:bg-red-600"
+                                ? "bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800" 
+                                : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800"
                             )}>
                               {taxReport.gain.amount > 0 ? "+" : ""}{formatCurrency(taxReport.gain)}
                             </Badge>
-                            <div className="text-xs text-slate-500 mt-0.5">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               @ {hasTaxReport 
                                 ? formatCurrency(taxReport.sellTransaction.assetValueFiat.amount / 
                                     taxReport.sellTransaction.assetAmount.amount)
@@ -271,18 +272,18 @@ export function ReportSummary({
                   
                   {/* Expanded content */}
                   {isExpanded && (
-                    <div className="border-t border-gray-200">
+                    <div className="border-t border-gray-200 dark:border-gray-700">
                       {/* Stats summary */}
                       {hasTaxReport && (
-                        <div className="grid grid-cols-3 divide-x divide-gray-200 border-b">
+                        <div className="grid grid-cols-3 divide-x divide-gray-200 dark:divide-gray-700 border-b border-gray-200 dark:border-gray-700">
                           <div className="p-2 text-center">
-                            <div className="text-xs text-slate-500">Proceeds</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Proceeds</div>
                             <div className="font-medium">
                               {formatCurrency(taxReport.proceeds)}
                             </div>
                           </div>
                           <div className="p-2 text-center">
-                            <div className="text-xs text-slate-500">Cost Basis</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Cost Basis</div>
                             <div className="font-medium">
                               {formatCurrency(taxReport.costBasis)}
                             </div>
@@ -290,18 +291,18 @@ export function ReportSummary({
                           <div className={cn(
                             "p-2 text-center",
                             taxReport.gain.amount > 0 
-                              ? "bg-green-50" 
+                              ? "bg-green-50 dark:bg-green-950/30" 
                               : taxReport.gain.amount < 0 
-                                ? "bg-red-50" 
+                                ? "bg-red-50 dark:bg-red-950/30" 
                                 : ""
                           )}>
-                            <div className="text-xs text-slate-500">Gain/Loss</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Gain/Loss</div>
                             <div className={cn(
                               "font-medium",
                               taxReport.gain.amount > 0 
-                                ? "text-green-600" 
+                                ? "text-green-600 dark:text-green-500" 
                                 : taxReport.gain.amount < 0 
-                                  ? "text-red-600" 
+                                  ? "text-red-600 dark:text-red-500" 
                                   : ""
                             )}>
                               {formatCurrency(taxReport.gain)} ({gainPercentage.toFixed(1)}%)
@@ -312,11 +313,11 @@ export function ReportSummary({
                       
                       {/* Warning for uncovered sells */}
                       {hasTaxReport && !hasSufficientCoverage && taxReport.uncoveredSellAmount && (
-                        <div className="p-2 bg-orange-50 border-b text-sm">
+                        <div className="p-2 bg-orange-50 dark:bg-orange-950/30 border-b border-orange-200 dark:border-orange-900 text-sm">
                           <div className="flex items-start">
-                            <AlertCircle className="h-4 w-4 mr-1 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <AlertCircle className="h-4 w-4 mr-1 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-xs text-orange-800">
+                              <p className="text-xs text-orange-800 dark:text-orange-300">
                                 <strong>Uncovered:</strong> {taxReport.uncoveredSellAmount.amount.toFixed(6)} {taxReport.uncoveredSellAmount.unit}
                                 {taxReport.uncoveredSellValue && (
                                   <span> ({formatCurrency(taxReport.uncoveredSellValue)})</span>
@@ -364,8 +365,8 @@ export function ReportSummary({
                                         <Badge variant="outline" className={cn(
                                           "text-xs py-0 px-1 h-5",
                                           buyTx.taxType === TaxType.LONG_TERM 
-                                            ? "border-green-500 text-green-700"
-                                            : "border-blue-500 text-blue-700"
+                                            ? "border-green-500 text-green-700 dark:border-green-600 dark:text-green-400"
+                                            : "border-blue-500 text-blue-700 dark:border-blue-600 dark:text-blue-400"
                                         )}>
                                           {buyTx.taxType}
                                         </Badge>
@@ -388,16 +389,16 @@ export function ReportSummary({
       </CardContent>
       
       <style jsx global>{`
-        .animate-pulse-light {
-          animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .animate-pulse-theme {
+          animation: pulse-theme 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         
-        @keyframes pulse-light {
+        @keyframes pulse-theme {
           0%, 100% {
-            background-color: white;
+            background-color: hsl(var(--card));
           }
           50% {
-            background-color: rgb(239, 246, 255);
+            background-color: hsl(var(--muted));
           }
         }
         

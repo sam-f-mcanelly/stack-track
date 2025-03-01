@@ -1,6 +1,6 @@
-import { NormalizedTransaction, NormalizedTransactionType, NormalizedTransactionSortKey } from "@/models/transactions";
+import { NormalizedTransaction, NormalizedTransactionType, NormalizedTransactionSortKey } from "@/lib/models/transactions";
 import { TableTransaction, convertToTableTransaction } from "@/lib/utils/tax/transactionConverter";
-import { SellReportSummary } from "@/models/tax";
+import { SellReportSummary } from "@/lib/models/tax";
 import { fetchTransactions } from "@/app/api/transactions/transactions";
 
 // Temporary year constant, should be made configurable in future
@@ -47,11 +47,11 @@ export const fetchBuyTransactionsForAssets = async (
 
       // Convert and store in the cache
       const convertedTransactions = result.data
-      .filter(tx => !tx.filedWithIRS)
-      .map(tx => {
-        const tableTx = convertToTableTransaction(tx);
-        return tableTx;
-      });
+        .filter(tx => !tx.filedWithIRS)
+        .map(tx => {
+          const tableTx = convertToTableTransaction(tx);
+          return tableTx;
+        });
 
       assetBuyTransactionsMap[asset] = convertedTransactions;
     } catch (error) {
