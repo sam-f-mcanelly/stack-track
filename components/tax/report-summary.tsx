@@ -255,12 +255,6 @@ export function ReportSummary({
                             )}>
                               {taxReport.gain.amount > 0 ? "+" : ""}{formatValue(taxReport.gain.amount, taxReport.gain.unit)}
                             </Badge>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                              @ {hasTaxReport 
-                                ? formatValue(taxReport.sellTransaction.assetValueFiat.amount / 
-                                    taxReport.sellTransaction.assetAmount.amount, taxReport.sellTransaction.assetValueFiat.unit)
-                                : `$${sellTx.price.toFixed(2)}`}
-                            </div>
                           </>
                         ) : (
                           <div className="text-xs">

@@ -3,7 +3,7 @@ import { ExchangeAmount, NormalizedTransaction } from "@/lib/models/transactions
 export enum TaxTreatment {
   FIFO = 'FIFO',
   LIFO = 'LIFO',
-  CUSTOM = 'CUSTOM',
+  // CUSTOM = 'CUSTOM',
   MAX_PROFIT = 'MAX_PROFIT',
   MIN_PROFIT = 'MIN_PROFIT'
 }

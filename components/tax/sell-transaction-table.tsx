@@ -282,10 +282,16 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                           LIFO
                         </div>
                       </SelectItem>
-                      <SelectItem value="CUSTOM" className="text-xs">
+                      <SelectItem value="MAX_PROFIT" className="text-xs">
                         <div className="flex items-center">
                           <CustomIcon className="h-3 w-3 mr-1" />
-                          CUSTOM
+                          MAX_PROFIT
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="MIN_PROFIT" className="text-xs">
+                        <div className="flex items-center">
+                          <CustomIcon className="h-3 w-3 mr-1" />
+                          MIN_PROFIT
                         </div>
                       </SelectItem>
                     </SelectContent>
