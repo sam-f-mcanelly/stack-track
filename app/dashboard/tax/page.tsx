@@ -18,9 +18,11 @@ export default function TaxPage() {
     sortOrder,
     sellReportSummaries,
     isLoading,
+    isFetchingTaxReport, // Get the new loading state
     year,
     getSortedSellTransactions,
     handleSelectSellTransaction,
+    handleSelectAllSellTransactions,
     handleTaxMethodChange,
     handleConfigureClick,
     handleSaveBuyTransactions,
@@ -65,12 +67,14 @@ export default function TaxPage() {
           <SellTransactionTable
             transactions={sortedSellTransactions}
             isLoading={isLoading}
+            isFetchingTaxReport={isFetchingTaxReport} // Pass the new loading state
             year={year}
             selectedTransactions={selectedSellTransactions}
             taxMethods={taxMethods}
             sortKey={sortKey}
             sortOrder={sortOrder}
             onSelectTransaction={handleSelectSellTransaction}
+            onSelectAllTransactions={handleSelectAllSellTransactions}
             onTaxMethodChange={handleTaxMethodChange}
             onConfigureClick={handleConfigureClick}
             onToggleSort={toggleSort}

@@ -45,7 +45,7 @@ export function ReportSummary({
     });
   }, [selectedSellTransactions]);
   
-  // Auto-expand only newly updated tax reports
+  // Track newly updated tax reports but don't auto-expand them
   useEffect(() => {
     const currentTaxReportKeys = Object.keys(taxReports);
     
@@ -59,16 +59,7 @@ export function ReportSummary({
     newReports.forEach(key => updatedReports.add(key));
     
     if (updatedReports.size > 0) {
-      // Auto-expand the newly updated reports
-      setExpandedSells(prev => {
-        const newState = { ...prev };
-        updatedReports.forEach(id => {
-          newState[id] = true; // Only expand newly updated reports
-        });
-        return newState;
-      });
-      
-      // Mark these reports as newly updated for highlighting
+      // Mark these reports as newly updated for highlighting without expanding them
       setNewlyUpdatedTaxReports(updatedReports);
       
       // Clear the highlighting after 3 seconds

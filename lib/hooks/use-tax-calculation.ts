@@ -14,6 +14,7 @@ export function useTaxCalculation() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [taxReportDetails, setTaxReportDetails] = useState<Record<string, TaxableEventResult>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFetchingTaxReport, setIsFetchingTaxReport] = useState<boolean>(false);
 
   // Track the current state snapshot to avoid dependency on the actual state objects
   const stateRef = useRef({
@@ -58,7 +59,7 @@ export function useTaxCalculation() {
 
     // Set fetching flag to prevent concurrent fetches
     isFetchingRef.current = true;
-    setIsLoading(true);
+    setIsFetchingTaxReport(true); // Only set tax report loading to true, not the entire table
 
     try {
       const taxReportResult = await requestTaxReport(
@@ -85,7 +86,7 @@ export function useTaxCalculation() {
     } catch (error) {
       console.error("Error fetching tax report:", error);
     } finally {
-      setIsLoading(false);
+      setIsFetchingTaxReport(false); // Only reset tax report loading
       isFetchingRef.current = false;
       setNeedsFetch(false); // Clear the fetch flag
     }
@@ -118,7 +119,7 @@ export function useTaxCalculation() {
 
   // Toggle selection of a sell transaction
   const handleSelectSellTransaction = (id: string) => {
-    console.log("Setting sell transactions");
+    console.log("Setting sell transaction", id);
     setSelectedSellTransactions((prev) => {
       const newSelection = prev.includes(id)
         ? prev.filter((txId) => txId !== id)
@@ -127,6 +128,23 @@ export function useTaxCalculation() {
       // Schedule a fetch after state update is applied
       setTimeout(() => setNeedsFetch(true), 0);
 
+      return newSelection;
+    });
+  };
+  
+  // Toggle all sell transactions
+  const handleSelectAllSellTransactions = (selected: boolean) => {
+    console.log("Setting all sell transactions to", selected);
+    setSelectedSellTransactions((prev) => {
+      const newSelection = selected 
+        ? sellTransactions.map(tx => tx.id) 
+        : [];
+        
+      // Schedule a fetch after state update is applied
+      if (prev.length !== newSelection.length) {
+        setTimeout(() => setNeedsFetch(true), 0);
+      }
+      
       return newSelection;
     });
   };
@@ -219,9 +237,11 @@ export function useTaxCalculation() {
     sortOrder,
     sellReportSummaries: taxReportDetails, // Map the new tax report details to the old format
     isLoading,
+    isFetchingTaxReport, // Export the new tax report loading state
     year: TEMP_YEAR,
     getSortedSellTransactions,
     handleSelectSellTransaction,
+    handleSelectAllSellTransactions, // Export the select all function
     handleTaxMethodChange,
     handleConfigureClick,
     handleSaveBuyTransactions,

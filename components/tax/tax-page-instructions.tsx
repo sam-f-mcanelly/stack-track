@@ -24,9 +24,6 @@ export function TaxPageInstructions() {
             <FileText className="h-6 w-6 mr-2 text-green-600 dark:text-green-500" />
             <CardTitle>Tax Report Guide</CardTitle>
           </div>
-          <Badge variant="outline" className="bg-white-50 text-black-700 border-blue-200 dark:bg-white-900/30 dark:text-back-400 dark:border-blue-800 px-3">
-            2024 Tax Year
-          </Badge>
         </div>
         <CardDescription className="mt-1">
           Generate accurate tax reports for your cryptocurrency transactions in just a few steps

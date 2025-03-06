@@ -30,6 +30,10 @@ interface SellTransactionTableProps {
   onTaxMethodChange: (id: string, method: string) => void;
   onConfigureClick: (id: string) => void;
   onToggleSort: (key: string) => void;
+  // Optional prop for tax report loading state
+  isFetchingTaxReport?: boolean;
+  // New prop for selecting all transactions
+  onSelectAllTransactions?: (selected: boolean) => void;
 }
 
 export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
@@ -44,6 +48,8 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
   onTaxMethodChange,
   onConfigureClick,
   onToggleSort,
+  isFetchingTaxReport = false,
+  onSelectAllTransactions
 }) => {
   // Format date to be more readable
   const formatDate = (dateString: string) => {
@@ -95,18 +101,48 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
 
   return (
     <div className="rounded-lg border dark:border-gray-700 overflow-hidden">
+      {/* Show tax report loading state if applicable */}
+      {isFetchingTaxReport && selectedTransactions.length > 0 && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-2 text-center text-sm text-blue-700 dark:text-blue-300">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <span>Calculating tax report...</span>
+          </div>
+        </div>
+      )}
+      
       <Table>
         <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
           <TableRow>
             <TableHead className="w-[40px] text-center">
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger>
-                    <span className="sr-only">Select</span>
-                    <Checkbox className="opacity-0" />
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center">
+                      {!isLoading && transactions.length > 0 && onSelectAllTransactions && (
+                        <Checkbox 
+                          checked={
+                            transactions.length > 0 && 
+                            selectedTransactions.length === transactions.length &&
+                            selectedTransactions.length > 0
+                          }
+                          indeterminate={
+                            selectedTransactions.length > 0 && 
+                            selectedTransactions.length < transactions.length
+                          }
+                          onCheckedChange={(checked) => {
+                            onSelectAllTransactions(!!checked);
+                          }}
+                          aria-label="Select all transactions"
+                        />
+                      )}
+                      {(isLoading || transactions.length === 0 || !onSelectAllTransactions) && (
+                        <span className="sr-only">Select</span>
+                      )}
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Select transactions for tax reporting</p>
+                    <p>Select all transactions for tax reporting</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -191,7 +227,7 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
                 Total {getSortIcon("total")}
               </Button>
             </TableHead>
-                            <TableHead className="w-[160px]">
+            <TableHead className="w-[160px]">
               <div className="text-xs font-medium flex items-center text-slate-600 dark:text-slate-400">
                 <Settings className="h-3.5 w-3.5 mr-1 inline-block" />
                 Tax Method
