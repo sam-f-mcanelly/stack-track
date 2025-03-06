@@ -6,9 +6,10 @@ import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, DollarSign } from 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
-import { TaxableEventResult, TaxType, UsedBuyTransaction } from "@/lib/models/backend/tax/tax";
+import { TaxableEventResult, TaxReportResult, TaxType, UsedBuyTransaction } from "@/lib/models/backend/tax/tax";
 import { ExchangeAmount } from "@/lib/models/transactions";
 import { formatValue } from "@/lib/utils/formatter";
+import { generatePdfTaxReport } from "@/lib/services/tax-service-backend";
 
 interface ReportSummaryProps {
   selectedSellTransactions: string[];
@@ -22,7 +23,6 @@ interface ReportSummaryProps {
 export function ReportSummary({
   selectedSellTransactions,
   sellTransactions,
-  sellToBuyTransactions,
   taxMethods,
   onGenerateReport,
   taxReports,
@@ -91,7 +91,31 @@ export function ReportSummary({
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
-      await onGenerateReport();
+      // First generate the report data
+      const reportResult = await onGenerateReport();
+      
+      // Construct a TaxReportResult from the returned report data
+      const taxReportResult: TaxReportResult = {
+        requestId: `report-${Date.now()}`,
+        results: Object.values(taxReports)
+      };
+      
+      // Call the API to generate the PDF
+      const pdfBlob = await generatePdfTaxReport(taxReportResult);
+      
+      // Create a download link and trigger the download
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `crypto-tax-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      
+      return reportResult;
+    } catch (error) {
+      console.error("Error generating PDF report:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -147,7 +171,7 @@ export function ReportSummary({
           </div>
           <Button 
             onClick={handleGenerateReport} 
-            className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white font-bold transition-all"
+            className="bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 text-white font-bold transition-all"
             disabled={selectedSellTransactions.length === 0 || isGenerating}
             size="sm"
           >
@@ -315,7 +339,7 @@ export function ReportSummary({
                               <p className="text-xs text-orange-800 dark:text-orange-300">
                                 <strong>Uncovered:</strong> {taxReport.uncoveredSellAmount.amount.toFixed(6)} {taxReport.uncoveredSellAmount.unit}
                                 {taxReport.uncoveredSellValue && (
-                                  <span> ({formatValue(taxReport.uncoveredSellValue.amount, taxReport.uncoveredSellAmount.unit)})</span>
+                                  <span> ({formatValue(taxReport.uncoveredSellValue.amount, taxReport.uncoveredSellValue.unit)})</span>
                                 )}
                               </p>
                             </div>

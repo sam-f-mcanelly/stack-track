@@ -17,14 +17,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export function TaxPageInstructions() {
   return (
-    <Card className="overflow-hidden border-t-4 border-t-green-500 dark:border-t-green-600 shadow-md">
+    <Card className="overflow-hidden border-t-4 border-t-blue-500 dark:border-t-blue-600 shadow-md">
       <CardHeader className="bg-gradient-to-r from-slate-100 to-white dark:from-slate-800 dark:to-slate-900 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <FileText className="h-6 w-6 mr-2 text-green-600 dark:text-green-500" />
             <CardTitle>Tax Report Guide</CardTitle>
           </div>
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-3">
+          <Badge variant="outline" className="bg-white-50 text-black-700 border-blue-200 dark:bg-white-900/30 dark:text-back-400 dark:border-blue-800 px-3">
             2024 Tax Year
           </Badge>
         </div>

@@ -60,7 +60,39 @@ export async function requestTaxReport(
 }
 
 /**
+ * Generates a PDF tax report and triggers download
+ * 
+ * @param taxReport The tax report data to include in the PDF
+ * @returns A blob containing the PDF file
+ */
+export async function generatePdfTaxReport(
+  taxReport: TaxReportResult
+): Promise<Blob> {
+  try {
+    // TODO: Replace with your backend domain - same as used in requestTaxReport
+    const response = await fetch(`http://192.168.68.75:3090/api/tax/report/pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(taxReport)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  } catch (error) {
+    console.error("Error generating PDF tax report:", error);
+    throw error;
+  }
+}
+
+/**
  * Converts a TaxReportResult to a more usable format for the UI
+ * 
+ * TODO: move somewhere else
  * 
  * @param taxReportResult Result from the API
  * @returns Processed tax report data for the UI
