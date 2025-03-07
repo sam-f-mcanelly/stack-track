@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  redirect("/dashboard")
+  redirect('/dashboard');
 }
 
 // To revert to the original landing page:
@@ -166,4 +166,3 @@ export default function Home() {
 //     </svg>
 //   )
 // }
-

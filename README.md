@@ -21,11 +21,13 @@ A Next.js-based frontend application for tracking Bitcoin transactions and gener
 ## 📦 Core Dependencies
 
 ### Framework
+
 - **Next.js** (v14.2.23) - React framework for production
 - **React** (v18) - UI library
 - **TypeScript** (v5) - Type safety and developer experience
 
 ### UI Components
+
 - **Radix UI** - Headless UI components
   - Multiple components including Accordion, Dialog, Navigation Menu
   - All components at latest stable versions
@@ -34,11 +36,13 @@ A Next.js-based frontend application for tracking Bitcoin transactions and gener
 - **Tailwind CSS** (v3.4.17) - Utility-first CSS framework
 
 ### Forms and Validation
+
 - **React Hook Form** (latest) - Form handling
 - **Zod** (latest) - Schema validation
 - **@hookform/resolvers** (latest) - Form validation integration
 
 ### Development Tools
+
 - **ESLint** (v8.57.1) - Code linting
 - **PostCSS** (v8) - CSS processing
 - **TypeScript** (v5) - Static type checking
@@ -72,12 +76,14 @@ A Next.js-based frontend application for tracking Bitcoin transactions and gener
 ## 🚀 Getting Started
 
 1. Clone the repository:
+
    ```bash
    git clone [repository-url]
    cd bitcoin-tracker-frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -112,6 +118,7 @@ npm run docker:run
 ## 🔧 Environment Variables
 
 Create a `.env.local` file in the root directory with the following variables:
+
 ```env
 # Add your environment variables here
 ```

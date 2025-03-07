@@ -1,8 +1,15 @@
-import type { ExtendedTransaction } from "@/lib/mock-data"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import type { ExtendedTransaction } from '@/lib/mock-data';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface TransactionDetailsProps {
-  transactions: ExtendedTransaction[]
+  transactions: ExtendedTransaction[];
 }
 
 export function TransactionDetails({ transactions }: TransactionDetailsProps) {
@@ -34,13 +41,12 @@ export function TransactionDetails({ transactions }: TransactionDetailsProps) {
                   ))}
                 </ul>
               ) : (
-                "N/A"
+                'N/A'
               )}
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
-

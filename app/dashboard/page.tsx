@@ -1,19 +1,13 @@
-"use client";
+'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ComingSoon } from "@/components/shared/coming-soon";
-import { TransactionsTable } from "@/components/dashboard/transactions-table";
-import { useEffect, useState } from "react";
-import { ExchangeAmount } from "@/lib/models/transactions";
-import OverViewChart from "@/components/dashboard/charts/overview-chart";
-import { CsvManager } from "@/components/dashboard/data/csv-manager";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ComingSoon } from '@/components/shared/coming-soon';
+import { TransactionsTable } from '@/components/dashboard/transactions-table';
+import { useEffect, useState } from 'react';
+import { ExchangeAmount } from '@/lib/models/transactions';
+import OverViewChart from '@/components/dashboard/charts/overview-chart';
+import { CsvManager } from '@/components/dashboard/data/csv-manager';
 
 export default function DashboardPage() {
   const [portfolioValue, setPortfolioValue] = useState<ExchangeAmount>();
@@ -24,13 +18,11 @@ export default function DashboardPage() {
 
   const loadPortfolioData = async () => {
     try {
-      const response = await fetch(
-        "http://192.168.68.75:3090/api/metadata/portfolio_value/USD"
-      );
+      const response = await fetch('http://192.168.68.75:3090/api/metadata/portfolio_value/USD');
       const newData: ExchangeAmount = await response.json();
       setPortfolioValue(newData);
     } catch (error) {
-      console.error("Error loading portfolio value:", error);
+      console.error('Error loading portfolio value:', error);
     }
   };
 
@@ -50,11 +42,9 @@ export default function DashboardPage() {
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="card">
+            <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total BTC
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total BTC</CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -71,16 +61,12 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">2.77558904</div>
-                <p className="text-xs text-muted-foreground">
-                  +2% from last month
-                </p>
+                <p className="text-xs text-muted-foreground">+2% from last month</p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Portfolio Value
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -96,23 +82,19 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: portfolioValue?.unit || "USD",
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: portfolioValue?.unit || 'USD',
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   }).format(portfolioValue?.amount || 0)}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  +20.1% from last month [FAKE]
-                </p>
+                <p className="text-xs text-muted-foreground">+20.1% from last month [FAKE]</p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Addresses
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Addresses</CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -130,16 +112,12 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">
-                  +180.1% from last month
-                </p>
+                <p className="text-xs text-muted-foreground">+180.1% from last month</p>
               </CardContent>
             </Card>
             <Card className="card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Active Assets
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Active Assets</CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -155,9 +133,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">
-                  +201 since last hour
-                </p>
+                <p className="text-xs text-muted-foreground">+201 since last hour</p>
               </CardContent>
             </Card>
           </div>

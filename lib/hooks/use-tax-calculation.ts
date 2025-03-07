@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
-import { TEMP_YEAR, fetchSellTransactions, sortTransactions } from "@/lib/services/tax-service";
-import { requestTaxReport, processTaxReportResult } from "@/lib/services/tax-service-backend";
-import { TaxableEventResult } from "@/lib/models/backend/tax/tax";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { TableTransaction } from '@/lib/utils/tax/transactionConverter';
+import { TEMP_YEAR, fetchSellTransactions, sortTransactions } from '@/lib/services/tax-service';
+import { requestTaxReport, processTaxReportResult } from '@/lib/services/tax-service-backend';
+import { TaxableEventResult } from '@/lib/models/backend/tax/tax';
 
 export function useTaxCalculation() {
   const [sellTransactions, setSellTransactions] = useState<TableTransaction[]>([]);
@@ -10,8 +10,8 @@ export function useTaxCalculation() {
   const [sellToBuyTransactions, setSellToBuyTransactions] = useState<Record<string, string[]>>({});
   const [taxMethods, setTaxMethods] = useState<Record<string, string>>({});
   const [selectedSellTransactions, setSelectedSellTransactions] = useState<string[]>([]);
-  const [sortKey, setSortKey] = useState<string>("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortKey, setSortKey] = useState<string>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [taxReportDetails, setTaxReportDetails] = useState<Record<string, TaxableEventResult>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFetchingTaxReport, setIsFetchingTaxReport] = useState<boolean>(false);
@@ -20,7 +20,7 @@ export function useTaxCalculation() {
   const stateRef = useRef({
     selectedSellTransactions: [] as string[],
     taxMethods: {} as Record<string, string>,
-    sellToBuyTransactions: {} as Record<string, string[]>
+    sellToBuyTransactions: {} as Record<string, string[]>,
   });
 
   // Track if a tax report fetch is needed
@@ -47,7 +47,7 @@ export function useTaxCalculation() {
     const {
       selectedSellTransactions: currentSelectedSellTransactions,
       taxMethods: currentTaxMethods,
-      sellToBuyTransactions: currentSellToBuyTransactions
+      sellToBuyTransactions: currentSellToBuyTransactions,
     } = stateRef.current;
 
     if (currentSelectedSellTransactions.length === 0 || isFetchingRef.current) {
@@ -55,7 +55,7 @@ export function useTaxCalculation() {
       return;
     }
 
-    console.log("Fetching tax report");
+    console.log('Fetching tax report');
 
     // Set fetching flag to prevent concurrent fetches
     isFetchingRef.current = true;
@@ -68,23 +68,24 @@ export function useTaxCalculation() {
         currentSellToBuyTransactions
       );
 
-      console.log("Tax report:");
+      console.log('Tax report:');
       console.log(taxReportResult);
 
-      const { sellToBuyTransactions: newSellToBuyTransactions, taxReportDetails: newTaxReportDetails } =
-        processTaxReportResult(taxReportResult);
+      const {
+        sellToBuyTransactions: newSellToBuyTransactions,
+        taxReportDetails: newTaxReportDetails,
+      } = processTaxReportResult(taxReportResult);
 
       // Update state with results from the API - these won't trigger a new fetch
       // because we'll clear the needsFetch flag
-      setSellToBuyTransactions(prevState => ({
+      setSellToBuyTransactions((prevState) => ({
         ...prevState,
-        ...newSellToBuyTransactions
+        ...newSellToBuyTransactions,
       }));
 
       setTaxReportDetails(newTaxReportDetails);
-
     } catch (error) {
-      console.error("Error fetching tax report:", error);
+      console.error('Error fetching tax report:', error);
     } finally {
       setIsFetchingTaxReport(false); // Only reset tax report loading
       isFetchingRef.current = false;
@@ -107,11 +108,9 @@ export function useTaxCalculation() {
       setSellTransactions(transactions);
 
       // Initialize tax methods
-      setTaxMethods(Object.fromEntries(
-        transactions.map((tx) => [tx.id, tx.taxMethod])
-      ));
+      setTaxMethods(Object.fromEntries(transactions.map((tx) => [tx.id, tx.taxMethod])));
     } catch (error) {
-      console.error("Error loading sell transactions:", error);
+      console.error('Error loading sell transactions:', error);
     } finally {
       setIsLoading(false);
     }
@@ -119,11 +118,9 @@ export function useTaxCalculation() {
 
   // Toggle selection of a sell transaction
   const handleSelectSellTransaction = (id: string) => {
-    console.log("Setting sell transaction", id);
+    console.log('Setting sell transaction', id);
     setSelectedSellTransactions((prev) => {
-      const newSelection = prev.includes(id)
-        ? prev.filter((txId) => txId !== id)
-        : [...prev, id];
+      const newSelection = prev.includes(id) ? prev.filter((txId) => txId !== id) : [...prev, id];
 
       // Schedule a fetch after state update is applied
       setTimeout(() => setNeedsFetch(true), 0);
@@ -131,20 +128,18 @@ export function useTaxCalculation() {
       return newSelection;
     });
   };
-  
+
   // Toggle all sell transactions
   const handleSelectAllSellTransactions = (selected: boolean) => {
-    console.log("Setting all sell transactions to", selected);
+    console.log('Setting all sell transactions to', selected);
     setSelectedSellTransactions((prev) => {
-      const newSelection = selected 
-        ? sellTransactions.map(tx => tx.id) 
-        : [];
-        
+      const newSelection = selected ? sellTransactions.map((tx) => tx.id) : [];
+
       // Schedule a fetch after state update is applied
       if (prev.length !== newSelection.length) {
         setTimeout(() => setNeedsFetch(true), 0);
       }
-      
+
       return newSelection;
     });
   };
@@ -180,10 +175,10 @@ export function useTaxCalculation() {
   const handleGenerateReport = async () => {
     try {
       // The report is already generated and available in taxReportDetails
-      console.log("Tax report generated:", taxReportDetails);
+      console.log('Tax report generated:', taxReportDetails);
       return { success: true, report: taxReportDetails };
     } catch (error) {
-      console.error("Error generating tax report:", error);
+      console.error('Error generating tax report:', error);
       throw error;
     }
   };
@@ -191,10 +186,10 @@ export function useTaxCalculation() {
   // Toggle the sort order/key
   const toggleSort = (key: string) => {
     if (key === sortKey) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortKey(key);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
   };
 
@@ -210,7 +205,7 @@ export function useTaxCalculation() {
     if (!taxEventResult) return [];
 
     // Convert the API's used buy transactions to TableTransaction format
-    return taxEventResult.usedBuyTransactions.map(buyTx => {
+    return taxEventResult.usedBuyTransactions.map((buyTx) => {
       const originalTx = buyTx.originalTransaction;
 
       return {
@@ -221,8 +216,8 @@ export function useTaxCalculation() {
         amount: buyTx.amountUsed.amount, // Extract the amount from ExchangeAmount
         price: originalTx.assetValueFiat.amount / originalTx.assetAmount.amount,
         total: buyTx.costBasis.amount, // Extract the amount from ExchangeAmount
-        taxMethod: taxMethods[sellId] || "FIFO",
-        term: buyTx.taxType === "LONG_TERM" ? "Long Term" : "Short Term" // Convert enum value to term string
+        taxMethod: taxMethods[sellId] || 'FIFO',
+        term: buyTx.taxType === 'LONG_TERM' ? 'Long Term' : 'Short Term', // Convert enum value to term string
       };
     });
   };
@@ -247,6 +242,6 @@ export function useTaxCalculation() {
     handleSaveBuyTransactions,
     handleGenerateReport,
     toggleSort,
-    getBuyTransactionsForSell
+    getBuyTransactionsForSell,
   };
 }

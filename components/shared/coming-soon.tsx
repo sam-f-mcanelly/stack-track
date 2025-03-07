@@ -1,9 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock } from 'lucide-react';
 
 interface ComingSoonProps {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
 
 export function ComingSoon({ title, description }: ComingSoonProps) {
@@ -22,6 +22,5 @@ export function ComingSoon({ title, description }: ComingSoonProps) {
         </p>
       </CardContent>
     </Card>
-  )
+  );
 }
-

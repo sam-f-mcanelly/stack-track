@@ -34,8 +34,8 @@
 
     --radius: 0.5rem;
 
-    --usd-chart-line: 120, 75%, 50%;  
-    --btc-chart-line: 28, 96%, 55%; 
+    --usd-chart-line: 120, 75%, 50%;
+    --btc-chart-line: 28, 96%, 55%;
   }
 
   .dark {
@@ -97,4 +97,3 @@
 .button {
   @apply transition-all duration-300;
 }
-

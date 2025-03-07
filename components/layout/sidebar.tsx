@@ -1,26 +1,26 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Calculator, User, LogOut, FileText } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme/theme-toggle"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, Calculator, User, LogOut, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SidebarProps {
-  onLogout: () => void
+  onLogout: () => void;
 }
 
 const sidebarItems = [
-  { name: "Home", href: "/dashboard", icon: Home },
-  { name: "Tax", href: "/dashboard/tax", icon: Calculator },
-  { name: "Reports", href: "/dashboard/reports", icon: FileText },
-  { name: "Profile", href: "/dashboard/profile", icon: User },
-]
+  { name: 'Home', href: '/dashboard', icon: Home },
+  { name: 'Tax', href: '/dashboard/tax', icon: Calculator },
+  { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Profile', href: '/dashboard/profile', icon: User },
+];
 
 export function Sidebar({ onLogout }: SidebarProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <div className="flex h-full w-16 flex-col justify-between border-r bg-background shadow-md">
@@ -38,8 +38,10 @@ export function Sidebar({ onLogout }: SidebarProps) {
                       variant="ghost"
                       size="icon"
                       className={cn(
-                        "w-full transition-all duration-300 ease-in-out",
-                        pathname === item.href ? "bg-primary text-primary-foreground" : "hover:bg-primary/10",
+                        'w-full transition-all duration-300 ease-in-out',
+                        pathname === item.href
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-primary/10'
                       )}
                     >
                       <item.icon className="h-5 w-5" />
@@ -69,6 +71,5 @@ export function Sidebar({ onLogout }: SidebarProps) {
         </div>
       </TooltipProvider>
     </div>
-  )
+  );
 }
-

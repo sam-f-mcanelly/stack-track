@@ -1,9 +1,9 @@
-"use client";
-import { Sidebar } from "@/components/layout/sidebar";
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import type React from "react"; // Added import for React
+'use client';
+import { Sidebar } from '@/components/layout/sidebar';
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import type React from 'react'; // Added import for React
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const handleLogout = () => {
     logout();
-    router.push("/");
+    router.push('/');
   };
 
   // To re-enable login requirement, uncomment the following check:
@@ -31,12 +31,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // }
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <div className="flex h-screen overflow-hidden">
         <Sidebar onLogout={handleLogout} />
         <main className="flex-1 overflow-y-auto bg-background">{children}</main>

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   MoreHorizontal,
   ChevronLeft,
@@ -33,27 +33,31 @@ import {
   Eye,
   Edit,
   FileText,
-  RefreshCw
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { NormalizedTransactionSortKey, NormalizedTransaction, NormalizedTransactionType } from "@/lib/models/transactions";
-import { 
-  fetchTransactions, 
-  TRANSACTION_TYPES, 
-  ASSET_TYPES, 
-  PaginationResponse
-} from "@/app/api/transactions/transactions";
-import { formatValue } from "@/lib/utils/formatter";
+  RefreshCw,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  NormalizedTransactionSortKey,
+  NormalizedTransaction,
+  NormalizedTransactionType,
+} from '@/lib/models/transactions';
+import {
+  fetchTransactions,
+  TRANSACTION_TYPES,
+  ASSET_TYPES,
+  PaginationResponse,
+} from '@/app/api/transactions/transactions';
+import { formatValue } from '@/lib/utils/formatter';
 
 export function TransactionsTable(): JSX.Element {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
-  const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>("timestamp");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>('timestamp');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   // Filter states
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<NormalizedTransactionType[]>([]);
@@ -71,13 +75,13 @@ export function TransactionsTable(): JSX.Element {
         sortBy: sortKey,
         sortOrder: sortOrder,
         assets: selectedAssets,
-        types: selectedTypes
+        types: selectedTypes,
       });
-      
+
       setTransactions(result.data);
       setTotalItems(result.total);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +89,10 @@ export function TransactionsTable(): JSX.Element {
 
   const toggleSort = (key: NormalizedTransactionSortKey): void => {
     if (key === sortKey) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortKey(key);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
     setCurrentPage(1); // Reset to first page when sorting changes
   };
@@ -110,7 +114,7 @@ export function TransactionsTable(): JSX.Element {
   const handleAssetChange = (asset: string): void => {
     // Toggle selection: add if not present, remove if present
     if (selectedAssets.includes(asset)) {
-      setSelectedAssets(selectedAssets.filter(a => a !== asset));
+      setSelectedAssets(selectedAssets.filter((a) => a !== asset));
     } else {
       setSelectedAssets([...selectedAssets, asset]);
     }
@@ -120,7 +124,7 @@ export function TransactionsTable(): JSX.Element {
   const handleTypeChange = (type: NormalizedTransactionType): void => {
     // Toggle selection: add if not present, remove if present
     if (selectedTypes.includes(type)) {
-      setSelectedTypes(selectedTypes.filter(t => t !== type));
+      setSelectedTypes(selectedTypes.filter((t) => t !== type));
     } else {
       setSelectedTypes([...selectedTypes, type]);
     }
@@ -131,8 +135,11 @@ export function TransactionsTable(): JSX.Element {
   const getSortIcon = (key: string) => {
     if (sortKey === key) {
       return (
-        <Badge variant="outline" className="ml-1 p-0 h-5 w-5 flex items-center justify-center dark:border-gray-600">
-          {sortOrder === "asc" ? "↑" : "↓"}
+        <Badge
+          variant="outline"
+          className="ml-1 p-0 h-5 w-5 flex items-center justify-center dark:border-gray-600"
+        >
+          {sortOrder === 'asc' ? '↑' : '↓'}
         </Badge>
       );
     }
@@ -156,15 +163,15 @@ export function TransactionsTable(): JSX.Element {
               <DropdownMenuLabel className="text-xs">Filter by Asset</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {ASSET_TYPES.map((asset) => (
-                <DropdownMenuItem 
-                  key={asset} 
+                <DropdownMenuItem
+                  key={asset}
                   className="text-xs flex items-center"
                   onClick={() => handleAssetChange(asset)}
                 >
-                  <input 
-                    type="checkbox" 
-                    checked={selectedAssets.includes(asset)} 
-                    onChange={() => {}} 
+                  <input
+                    type="checkbox"
+                    checked={selectedAssets.includes(asset)}
+                    onChange={() => {}}
                     className="mr-2"
                   />
                   {asset}
@@ -185,15 +192,15 @@ export function TransactionsTable(): JSX.Element {
               <DropdownMenuLabel className="text-xs">Filter by Type</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {TRANSACTION_TYPES.map((type) => (
-                <DropdownMenuItem 
-                  key={type} 
+                <DropdownMenuItem
+                  key={type}
                   className="text-xs flex items-center"
                   onClick={() => handleTypeChange(type)}
                 >
-                  <input 
-                    type="checkbox" 
-                    checked={selectedTypes.includes(type)} 
-                    onChange={() => {}} 
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={() => {}}
                     className="mr-2"
                   />
                   {type}
@@ -201,11 +208,11 @@ export function TransactionsTable(): JSX.Element {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs h-8 px-2 flex items-center" 
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 px-2 flex items-center"
             onClick={() => loadData()}
           >
             <RefreshCw className="mr-1 h-3.5 w-3.5" />
@@ -219,142 +226,144 @@ export function TransactionsTable(): JSX.Element {
           <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
             <TableRow>
               <TableHead className="text-xs w-[200px]">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("id")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('id')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "id" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'id'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <FileText className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Transaction ID {getSortIcon("id")}
+                  Transaction ID {getSortIcon('id')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("timestamp")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('timestamp')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "timestamp" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'timestamp'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <Calendar className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Date {getSortIcon("timestamp")}
+                  Date {getSortIcon('timestamp')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs w-[80px]">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("type")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('type')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "type" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'type'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <Tag className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Type {getSortIcon("type")}
+                  Type {getSortIcon('type')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("transactionAmountFiat.amount")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('transactionAmountFiat.amount')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "transactionAmountFiat.amount" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'transactionAmountFiat.amount'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Amount (Fiat) {getSortIcon("transactionAmountFiat.amount")}
+                  Amount (Fiat) {getSortIcon('transactionAmountFiat.amount')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("fee.amount")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('fee.amount')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "fee.amount" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'fee.amount'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Fee {getSortIcon("fee.amount")}
+                  Fee {getSortIcon('fee.amount')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("assetAmount.amount")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('assetAmount.amount')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "assetAmount.amount" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'assetAmount.amount'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <Tag className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Asset Amount {getSortIcon("assetAmount.amount")}
+                  Asset Amount {getSortIcon('assetAmount.amount')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("assetValueFiat.amount")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('assetValueFiat.amount')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "assetValueFiat.amount" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'assetValueFiat.amount'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Asset Value (Fiat) {getSortIcon("assetValueFiat.amount")}
+                  Asset Value (Fiat) {getSortIcon('assetValueFiat.amount')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("source")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('source')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "source" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'source'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <Tag className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Source {getSortIcon("source")}
+                  Source {getSortIcon('source')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => toggleSort("filedWithIRS")} 
+                <Button
+                  variant="ghost"
+                  onClick={() => toggleSort('filedWithIRS')}
                   className={cn(
-                    "p-1 h-auto text-xs font-medium flex items-center",
-                    sortKey === "filedWithIRS" 
-                      ? "text-slate-900 dark:text-slate-100" 
-                      : "text-slate-600 dark:text-slate-400"
+                    'p-1 h-auto text-xs font-medium flex items-center',
+                    sortKey === 'filedWithIRS'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400'
                   )}
                 >
                   <FileText className="h-3.5 w-3.5 mr-1 inline-block" />
-                  Filed with IRS {getSortIcon("filedWithIRS")}
+                  Filed with IRS {getSortIcon('filedWithIRS')}
                 </Button>
               </TableHead>
               <TableHead className="text-xs w-[100px]">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Actions</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  Actions
+                </span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -364,7 +373,9 @@ export function TransactionsTable(): JSX.Element {
                 <TableCell colSpan={10} className="h-24">
                   <div className="flex flex-col items-center justify-center text-center py-6 space-y-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 dark:border-green-400"></div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Loading transactions...</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Loading transactions...
+                    </p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -373,14 +384,18 @@ export function TransactionsTable(): JSX.Element {
                 <TableCell colSpan={10} className="h-24">
                   <div className="flex flex-col items-center justify-center py-6 text-center">
                     <FileText className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">No transactions found</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-500">Try clearing filters or changing the search criteria</p>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium">
+                      No transactions found
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-500">
+                      Try clearing filters or changing the search criteria
+                    </p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               transactions.map((transaction) => (
-                <TableRow 
+                <TableRow
                   key={transaction.id}
                   className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 >
@@ -396,7 +411,10 @@ export function TransactionsTable(): JSX.Element {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs py-2 text-right font-mono">
-                    {formatValue(transaction.transactionAmountFiat.amount, transaction.transactionAmountFiat.unit)}
+                    {formatValue(
+                      transaction.transactionAmountFiat.amount,
+                      transaction.transactionAmountFiat.unit
+                    )}
                   </TableCell>
                   <TableCell className="text-xs py-2 text-right font-mono">
                     {formatValue(transaction.fee.amount, transaction.fee.unit)}
@@ -405,7 +423,10 @@ export function TransactionsTable(): JSX.Element {
                     {formatValue(transaction.assetAmount.amount, transaction.assetAmount.unit)}
                   </TableCell>
                   <TableCell className="text-xs py-2 text-right font-mono">
-                    {formatValue(transaction.assetValueFiat.amount, transaction.assetValueFiat.unit)}
+                    {formatValue(
+                      transaction.assetValueFiat.amount,
+                      transaction.assetValueFiat.unit
+                    )}
                   </TableCell>
                   <TableCell className="text-xs py-2">
                     <Badge variant="outline" className="font-medium dark:border-gray-600">
@@ -413,15 +434,15 @@ export function TransactionsTable(): JSX.Element {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs py-2">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={cn(
-                        transaction.filedWithIRS 
-                          ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                          : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+                        transaction.filedWithIRS
+                          ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
+                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
                       )}
                     >
-                      {transaction.filedWithIRS ? "Yes" : "No"}
+                      {transaction.filedWithIRS ? 'Yes' : 'No'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs py-2">
