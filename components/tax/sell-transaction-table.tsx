@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,6 +13,10 @@ import {
   BarChart2,
   DollarSign,
   Tag,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,7 +37,7 @@ interface SellTransactionTableProps {
   // Optional prop for tax report loading state
   isFetchingTaxReport?: boolean;
   // New prop for selecting all transactions
-  onSelectAllTransactions?: (selected: boolean) => void;
+  onSelectAllTransactions?: (selected: boolean, transactionIds?: string[]) => void;
 }
 
 export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
@@ -51,6 +55,23 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
   isFetchingTaxReport = false,
   onSelectAllTransactions
 }) => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const totalPages = Math.ceil(transactions.length / pageSize);
+  
+  // Reset to first page when transactions change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [transactions.length]);
+
+  // Get current page of transactions
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return transactions.slice(startIndex, endIndex);
+  };
+
   // Format date to be more readable
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -99,6 +120,57 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
     }
   };
 
+  // Pagination controls
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const goToFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const goToLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Calculate if current page has all items selected
+  const isCurrentPageAllSelected = () => {
+    const currentItems = getCurrentPageItems();
+    return (
+      currentItems.length > 0 &&
+      currentItems.every(tx => selectedTransactions.includes(tx.id))
+    );
+  };
+
+  // Select/deselect all transactions on the current page
+  const toggleSelectCurrentPage = (selected: boolean) => {
+    if (!onSelectAllTransactions) return;
+    
+    if (selected) {
+      // When selecting all on current page, we pass the IDs to add
+      const currentItems = getCurrentPageItems();
+      const currentIds = currentItems.map(tx => tx.id);
+      onSelectAllTransactions(true, currentIds);
+    } else {
+      // When deselecting all on current page, we pass the IDs to remove
+      const currentItems = getCurrentPageItems();
+      const currentIds = currentItems.map(tx => tx.id);
+      onSelectAllTransactions(false, currentIds);
+    }
+  };
+
+  // Check if pagination should be shown
+  const showPagination = !isLoading && transactions.length > 0;
+  const currentItems = getCurrentPageItems();
+
   return (
     <div className="rounded-lg border dark:border-gray-700 overflow-hidden">
       {/* Show tax report loading state if applicable */}
@@ -114,35 +186,31 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
       <Table>
         <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
           <TableRow>
-            <TableHead className="w-[40px] text-center">
+            <TableHead className="w-[40px] text-center p-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center justify-center">
-                      {!isLoading && transactions.length > 0 && onSelectAllTransactions && (
+                      {!isLoading && currentItems.length > 0 && onSelectAllTransactions && (
                         <Checkbox 
-                          checked={
-                            transactions.length > 0 && 
-                            selectedTransactions.length === transactions.length &&
-                            selectedTransactions.length > 0
-                          }
+                          checked={isCurrentPageAllSelected()}
                           indeterminate={
-                            selectedTransactions.length > 0 && 
-                            selectedTransactions.length < transactions.length
+                            currentItems.some(tx => selectedTransactions.includes(tx.id)) &&
+                            !isCurrentPageAllSelected()
                           }
                           onCheckedChange={(checked) => {
-                            onSelectAllTransactions(!!checked);
+                            toggleSelectCurrentPage(!!checked);
                           }}
-                          aria-label="Select all transactions"
+                          aria-label="Select all transactions on current page"
                         />
                       )}
-                      {(isLoading || transactions.length === 0 || !onSelectAllTransactions) && (
+                      {(isLoading || currentItems.length === 0 || !onSelectAllTransactions) && (
                         <span className="sr-only">Select</span>
                       )}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Select all transactions for tax reporting</p>
+                    <p>Select all transactions on current page</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -259,12 +327,12 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            transactions.map((tx) => (
+            currentItems.map((tx) => (
               <TableRow key={tx.id} className={cn(
                 selectedTransactions.includes(tx.id) 
                   ? "bg-green-50 dark:bg-green-900/20" 
                   : "",
-                "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                "hover:bg-orange-50 dark:hover:bg-orange-800/50 transition-colors"
               )}>
                 <TableCell className="py-2">
                   <Checkbox
@@ -355,6 +423,67 @@ export const SellTransactionTable: React.FC<SellTransactionTableProps> = ({
           )}
         </TableBody>
       </Table>
+      
+      {/* Pagination Controls */}
+      {showPagination && (
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-gray-700">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, transactions.length)}</span> to{" "}
+            <span className="font-medium">{Math.min(currentPage * pageSize, transactions.length)}</span> of{" "}
+            <span className="font-medium">{transactions.length}</span> transactions
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={goToFirstPage}
+              disabled={currentPage === 1}
+            >
+              <span className="sr-only">Go to first page</span>
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={goToPrevPage}
+              disabled={currentPage === 1}
+            >
+              <span className="sr-only">Go to previous page</span>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="text-xs font-medium mx-2">
+              Page {currentPage} of {totalPages}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+            >
+              <span className="sr-only">Go to next page</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={goToLastPage}
+              disabled={currentPage === totalPages}
+            >
+              <span className="sr-only">Go to last page</span>
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

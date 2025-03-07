@@ -2,7 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, DollarSign } from "lucide-react";
+import { 
+  ChevronDown, 
+  ChevronRight, 
+  AlertCircle, 
+  CheckCircle, 
+  DollarSign,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
+  ChevronsLeft,
+  ChevronsRight 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { TableTransaction } from "@/lib/utils/tax/transactionConverter";
@@ -10,6 +20,7 @@ import { TaxableEventResult, TaxReportResult, TaxType, UsedBuyTransaction } from
 import { ExchangeAmount } from "@/lib/models/transactions";
 import { formatValue } from "@/lib/utils/formatter";
 import { generatePdfTaxReport } from "@/lib/services/tax-service-backend";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ReportSummaryProps {
   selectedSellTransactions: string[];
@@ -31,6 +42,12 @@ export function ReportSummary({
   const [newlyUpdatedTaxReports, setNewlyUpdatedTaxReports] = useState<Set<string>>(new Set());
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const previousTaxReportKeys = useRef<string[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const totalItems = selectedSellTransactions.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
   
   // Initialize expanded state for newly selected transactions - all collapsed by default
   useEffect(() => {
@@ -71,6 +88,11 @@ export function ReportSummary({
     // Update the ref with current keys for next comparison
     previousTaxReportKeys.current = currentTaxReportKeys;
   }, [taxReports]);
+
+  // Reset to first page when transactions or page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSellTransactions.length, pageSize]);
 
   const toggleExpand = (id: string) => {
     setExpandedSells((prev) => ({
@@ -132,6 +154,38 @@ export function ReportSummary({
     return `${symbol}${amount.toFixed(2)}`;
   };
 
+  // Get current page items
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, selectedSellTransactions.length);
+    return selectedSellTransactions.slice(startIndex, endIndex);
+  };
+
+  // Pagination controls
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const goToFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const goToLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Show pagination only if we have items
+  const showPagination = selectedSellTransactions.length > 0;
+  const currentPageItems = getCurrentPageItems();
+
   return (
     <Card className="mb-4 overflow-hidden">
       <CardHeader className="py-4">
@@ -145,7 +199,9 @@ export function ReportSummary({
               <div className="mt-1 flex items-center text-sm">
                 <div className="mr-4">
                   <span className="text-slate-500 dark:text-slate-400">Total Proceeds:</span>
-                  <span className="ml-1 font-semibold">${totalProceeds.toFixed(2)}</span>
+                  <span className="ml-1 font-semibold">
+                    ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalProceeds)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-500 dark:text-slate-400">Total Gain/Loss:</span>
@@ -154,7 +210,7 @@ export function ReportSummary({
                     totalGain > 0 ? "text-green-600 dark:text-green-500" : 
                     totalGain < 0 ? "text-red-600 dark:text-red-500" : ""
                   )}>
-                    ${totalGain.toFixed(2)}
+                    ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalGain)}
                   </span>
                 </div>
               </div>
@@ -177,225 +233,309 @@ export function ReportSummary({
             <p className="text-slate-500 dark:text-slate-400 text-sm">Select a sell transaction to add it to the report</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {selectedSellTransactions.map((sellId) => {
-              const sellTx = sellTransactions.find((tx) => tx.id === sellId);
-              const taxReport = taxReports[sellId];
-              const isNewlyUpdated = newlyUpdatedTaxReports.has(sellId);
-              const isExpanded = expandedSells[sellId];
-              
-              if (!sellTx) return null;
+          <>
+            <div className="space-y-2">
+              {currentPageItems.map((sellId) => {
+                const sellTx = sellTransactions.find((tx) => tx.id === sellId);
+                const taxReport = taxReports[sellId];
+                const isNewlyUpdated = newlyUpdatedTaxReports.has(sellId);
+                const isExpanded = expandedSells[sellId];
+                
+                if (!sellTx) return null;
 
-              // Check if we have a tax report and buy transactions
-              const hasTaxReport = !!taxReport;
-              
-              // If we have a report, determine if all sells are covered
-              const hasSufficientCoverage = hasTaxReport && 
-                (!taxReport.uncoveredSellAmount || taxReport.uncoveredSellAmount.amount === 0);
-              
-              // Use sell transaction data from either the report or the UI
-              const assetName = hasTaxReport 
-                ? taxReport.sellTransaction.assetAmount.unit 
-                : sellTx.asset;
-              
-              // Calculate gain/loss percentage if we have the data
-              const gainPercentage = hasTaxReport && taxReport.costBasis.amount !== 0
-                ? (taxReport.gain.amount / taxReport.costBasis.amount) * 100
-                : 0;
+                // Check if we have a tax report and buy transactions
+                const hasTaxReport = !!taxReport;
+                
+                // If we have a report, determine if all sells are covered
+                const hasSufficientCoverage = hasTaxReport && 
+                  (!taxReport.uncoveredSellAmount || taxReport.uncoveredSellAmount.amount === 0);
+                
+                // Use sell transaction data from either the report or the UI
+                const assetName = hasTaxReport 
+                  ? taxReport.sellTransaction.assetAmount.unit 
+                  : sellTx.asset;
+                
+                // Calculate gain/loss percentage if we have the data
+                const gainPercentage = hasTaxReport && taxReport.costBasis.amount !== 0
+                  ? (taxReport.gain.amount / taxReport.costBasis.amount) * 100
+                  : 0;
 
-              return (
-                <div
-                  key={sellId}
-                  className={cn(
-                    "rounded border overflow-hidden transition-all duration-300",
-                    isNewlyUpdated 
-                      ? "animate-pulse-theme border-blue-400 dark:border-blue-600" 
-                      : hasTaxReport && hasSufficientCoverage
-                        ? "border-l-3 border-l-green-500 dark:border-l-green-600 border-t-gray-200 border-r-gray-200 border-b-gray-200 dark:border-t-gray-700 dark:border-r-gray-700 dark:border-b-gray-700" 
-                        : hasTaxReport && !hasSufficientCoverage
-                          ? "border-orange-300 dark:border-orange-600"
-                          : "border-gray-200 dark:border-gray-700"
-                  )}
-                >
-                  {/* Compact header - always visible */}
+                return (
                   <div
+                    key={sellId}
                     className={cn(
-                      "py-2 px-3 cursor-pointer",
-                      hasTaxReport && hasSufficientCoverage 
-                        ? "bg-gradient-to-r from-green-50 to-white dark:from-green-950/30 dark:to-transparent" 
-                        : hasTaxReport && !hasSufficientCoverage
-                          ? "bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/30 dark:to-transparent"
-                          : "bg-white dark:bg-transparent"
+                      "rounded border overflow-hidden transition-all duration-300",
+                      isNewlyUpdated 
+                        ? "animate-pulse-theme border-blue-400 dark:border-blue-600" 
+                        : hasTaxReport && hasSufficientCoverage
+                          ? "border-l-3 border-l-green-500 dark:border-l-green-600 border-t-gray-200 border-r-gray-200 border-b-gray-200 dark:border-t-gray-700 dark:border-r-gray-700 dark:border-b-gray-700" 
+                          : hasTaxReport && !hasSufficientCoverage
+                            ? "border-orange-300 dark:border-orange-600"
+                            : "border-gray-200 dark:border-gray-700"
                     )}
-                    onClick={() => toggleExpand(sellId)}
                   >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 mr-1 flex-shrink-0" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 mr-1 flex-shrink-0" />
-                        )}
-                        <div>
-                          <div className="flex items-center">
-                            <span className="font-medium">
+                    {/* Compact header - always visible */}
+                    <div
+                      className={cn(
+                        "py-2 px-3 cursor-pointer",
+                        hasTaxReport && hasSufficientCoverage 
+                          ? "bg-gradient-to-r from-green-50 to-white dark:from-green-950/30 dark:to-transparent" 
+                          : hasTaxReport && !hasSufficientCoverage
+                            ? "bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/30 dark:to-transparent"
+                            : "bg-white dark:bg-transparent"
+                      )}
+                      onClick={() => toggleExpand(sellId)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 mr-1 flex-shrink-0" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 mr-1 flex-shrink-0" />
+                          )}
+                          <div>
+                            <div className="flex items-center">
+                              <span className="font-medium">
+                                {hasTaxReport 
+                                  ? `${taxReport.sellTransaction.assetAmount.amount} ${assetName}`
+                                  : `${sellTx.amount} ${assetName}`}
+                              </span>
+                              {hasTaxReport && hasSufficientCoverage ? (
+                                <CheckCircle className="h-4 w-4 ml-1 text-green-500 dark:text-green-400" />
+                              ) : hasTaxReport && !hasSufficientCoverage ? (
+                                <AlertCircle className="h-4 w-4 ml-1 text-orange-500 dark:text-orange-400" />
+                              ) : null}
+                              {isNewlyUpdated && (
+                                <Badge className="ml-1 text-xs py-0 px-1 h-5" variant="default">New</Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               {hasTaxReport 
-                                ? `${taxReport.sellTransaction.assetAmount.amount} ${assetName}`
-                                : `${sellTx.amount} ${assetName}`}
-                            </span>
-                            {hasTaxReport && hasSufficientCoverage ? (
-                              <CheckCircle className="h-4 w-4 ml-1 text-green-500 dark:text-green-400" />
-                            ) : hasTaxReport && !hasSufficientCoverage ? (
-                              <AlertCircle className="h-4 w-4 ml-1 text-orange-500 dark:text-orange-400" />
-                            ) : null}
-                            {isNewlyUpdated && (
-                              <Badge className="ml-1 text-xs py-0 px-1 h-5" variant="default">New</Badge>
-                            )}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            {hasTaxReport 
-                              ? taxReport.sellTransaction.timestampText 
-                              : sellTx.date} · {taxMethods[sellId]}
+                                ? taxReport.sellTransaction.timestampText 
+                                : sellTx.date} · {taxMethods[sellId]}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        {hasTaxReport ? (
-                          <>
-                            <Badge className={cn(
-                              "text-xs",
-                              taxReport.gain.amount > 0 
-                                ? "bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800" 
-                                : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800"
-                            )}>
-                              {taxReport.gain.amount > 0 ? "+" : ""}{formatValue(taxReport.gain.amount, taxReport.gain.unit)}
-                            </Badge>
-                          </>
-                        ) : (
-                          <div className="text-xs">
-                            @ ${sellTx.price.toFixed(2)}
-                          </div>
-                        )}
+                        <div className="flex flex-col items-end">
+                          {hasTaxReport ? (
+                            <>
+                              <Badge className={cn(
+                                "text-xs",
+                                taxReport.gain.amount > 0 
+                                  ? "bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800" 
+                                  : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800"
+                              )}>
+                                {taxReport.gain.amount > 0 ? "+" : ""}{formatValue(taxReport.gain.amount, taxReport.gain.unit)}
+                              </Badge>
+                            </>
+                          ) : (
+                            <div className="text-xs">
+                              @ ${sellTx.price.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Expanded content */}
-                  {isExpanded && (
-                    <div className="border-t border-gray-200 dark:border-gray-700">
-                      {/* Stats summary */}
-                      {hasTaxReport && (
-                        <div className="grid grid-cols-3 divide-x divide-gray-200 dark:divide-gray-700 border-b border-gray-200 dark:border-gray-700">
-                          <div className="p-2 text-center">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Proceeds</div>
-                            <div className="font-medium">
-                              {formatValue(taxReport.proceeds.amount, taxReport.proceeds.unit)}
+                    
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-200 dark:border-gray-700">
+                        {/* Stats summary */}
+                        {hasTaxReport && (
+                          <div className="grid grid-cols-3 divide-x divide-gray-200 dark:divide-gray-700 border-b border-gray-200 dark:border-gray-700">
+                            <div className="p-2 text-center">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">Proceeds</div>
+                              <div className="font-medium">
+                                {formatValue(taxReport.proceeds.amount, taxReport.proceeds.unit)}
+                              </div>
                             </div>
-                          </div>
-                          <div className="p-2 text-center">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Cost Basis</div>
-                            <div className="font-medium">
-                              {formatValue(taxReport.costBasis.amount, taxReport.costBasis.unit)}
+                            <div className="p-2 text-center">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">Cost Basis</div>
+                              <div className="font-medium">
+                                {formatValue(taxReport.costBasis.amount, taxReport.costBasis.unit)}
+                              </div>
                             </div>
-                          </div>
-                          <div className={cn(
-                            "p-2 text-center",
-                            taxReport.gain.amount > 0 
-                              ? "bg-green-50 dark:bg-green-950/30" 
-                              : taxReport.gain.amount < 0 
-                                ? "bg-red-50 dark:bg-red-950/30" 
-                                : ""
-                          )}>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Gain/Loss</div>
                             <div className={cn(
-                              "font-medium",
+                              "p-2 text-center",
                               taxReport.gain.amount > 0 
-                                ? "text-green-600 dark:text-green-500" 
+                                ? "bg-green-50 dark:bg-green-950/30" 
                                 : taxReport.gain.amount < 0 
-                                  ? "text-red-600 dark:text-red-500" 
+                                  ? "bg-red-50 dark:bg-red-950/30" 
                                   : ""
                             )}>
-                              {formatValue(taxReport.gain.amount, taxReport.gain.unit)} ({gainPercentage.toFixed(1)}%)
+                              <div className="text-xs text-slate-500 dark:text-slate-400">Gain/Loss</div>
+                              <div className={cn(
+                                "font-medium",
+                                taxReport.gain.amount > 0 
+                                  ? "text-green-600 dark:text-green-500" 
+                                  : taxReport.gain.amount < 0 
+                                    ? "text-red-600 dark:text-red-500" 
+                                    : ""
+                              )}>
+                                {formatValue(taxReport.gain.amount, taxReport.gain.unit)} ({gainPercentage.toFixed(1)}%)
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Warning for uncovered sells */}
-                      {hasTaxReport && !hasSufficientCoverage && taxReport.uncoveredSellAmount && (
-                        <div className="p-2 bg-orange-50 dark:bg-orange-950/30 border-b border-orange-200 dark:border-orange-900 text-sm">
-                          <div className="flex items-start">
-                            <AlertCircle className="h-4 w-4 mr-1 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="text-xs text-orange-800 dark:text-orange-300">
-                                <strong>Uncovered:</strong> {taxReport.uncoveredSellAmount.amount.toFixed(6)} {taxReport.uncoveredSellAmount.unit}
-                                {taxReport.uncoveredSellValue && (
-                                  <span> ({formatValue(taxReport.uncoveredSellValue.amount, taxReport.uncoveredSellValue.unit)})</span>
-                                )}
-                              </p>
+                        )}
+                        
+                        {/* Warning for uncovered sells */}
+                        {hasTaxReport && !hasSufficientCoverage && taxReport.uncoveredSellAmount && (
+                          <div className="p-2 bg-orange-50 dark:bg-orange-950/30 border-b border-orange-200 dark:border-orange-900 text-sm">
+                            <div className="flex items-start">
+                              <AlertCircle className="h-4 w-4 mr-1 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-orange-800 dark:text-orange-300">
+                                  <strong>Uncovered:</strong> {taxReport.uncoveredSellAmount.amount.toFixed(6)} {taxReport.uncoveredSellAmount.unit}
+                                  {taxReport.uncoveredSellValue && (
+                                    <span> ({formatValue(taxReport.uncoveredSellValue.amount, taxReport.uncoveredSellValue.unit)})</span>
+                                  )}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Buy transactions table */}
-                      {hasTaxReport && taxReport.usedBuyTransactions.length > 0 && (
-                        <div className="p-2">
-                          <div className="text-xs font-medium mb-1">Used Buy Transactions</div>
-                          <div className="overflow-x-auto">
-                            <Table className="w-full text-xs">
-                              <TableHeader>
-                                <TableRow className="h-7">
-                                  <TableHead className="py-1">Date</TableHead>
-                                  <TableHead className="py-1">Amount</TableHead>
-                                  <TableHead className="py-1">Price</TableHead>
-                                  <TableHead className="py-1">Cost Basis</TableHead>
-                                  <TableHead className="py-1">Tax Type</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {taxReport.usedBuyTransactions.map((buyTx: UsedBuyTransaction) => {
-                                  const originalTx = buyTx.originalTransaction;
-                                  
-                                  return (
-                                    <TableRow key={buyTx.transactionId} className="h-7">
-                                      <TableCell className="py-1">{originalTx.timestampText}</TableCell>
-                                      <TableCell className="py-1">
-                                        {buyTx.amountUsed.amount.toFixed(6)}
-                                      </TableCell>
-                                      <TableCell className="py-1">
-                                        {formatValue(
-                                          originalTx.assetValueFiat.amount,
-                                          originalTx.assetValueFiat.unit
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="py-1">
-                                        {formatValue(buyTx.costBasis.amount, buyTx.costBasis.unit)}
-                                      </TableCell>
-                                      <TableCell className="py-1">
-                                        <Badge variant="outline" className={cn(
-                                          "text-xs py-0 px-1 h-5",
-                                          buyTx.taxType === TaxType.LONG_TERM 
-                                            ? "border-green-500 text-green-700 dark:border-green-600 dark:text-green-400"
-                                            : "border-blue-500 text-blue-700 dark:border-blue-600 dark:text-blue-400"
-                                        )}>
-                                          {buyTx.taxType}
-                                        </Badge>
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })}
-                              </TableBody>
-                            </Table>
+                        )}
+                        
+                        {/* Buy transactions table */}
+                        {hasTaxReport && taxReport.usedBuyTransactions.length > 0 && (
+                          <div className="p-2">
+                            <div className="text-xs font-medium mb-1">Used Buy Transactions</div>
+                            <div className="overflow-x-auto">
+                              <Table className="w-full text-xs">
+                                <TableHeader>
+                                  <TableRow className="h-7">
+                                    <TableHead className="py-1">Date</TableHead>
+                                    <TableHead className="py-1">Amount</TableHead>
+                                    <TableHead className="py-1">Price</TableHead>
+                                    <TableHead className="py-1">Cost Basis</TableHead>
+                                    <TableHead className="py-1">Tax Type</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {taxReport.usedBuyTransactions.map((buyTx: UsedBuyTransaction) => {
+                                    const originalTx = buyTx.originalTransaction;
+                                    
+                                    return (
+                                      <TableRow key={buyTx.transactionId} className="h-7">
+                                        <TableCell className="py-1">{originalTx.timestampText}</TableCell>
+                                        <TableCell className="py-1">
+                                          {buyTx.amountUsed.amount.toFixed(6)}
+                                        </TableCell>
+                                        <TableCell className="py-1">
+                                          {formatValue(
+                                            originalTx.assetValueFiat.amount,
+                                            originalTx.assetValueFiat.unit
+                                          )}
+                                        </TableCell>
+                                        <TableCell className="py-1">
+                                          {formatValue(buyTx.costBasis.amount, buyTx.costBasis.unit)}
+                                        </TableCell>
+                                        <TableCell className="py-1">
+                                          <Badge variant="outline" className={cn(
+                                            "text-xs py-0 px-1 h-5",
+                                            buyTx.taxType === TaxType.LONG_TERM 
+                                              ? "border-green-500 text-green-700 dark:border-green-600 dark:text-green-400"
+                                              : "border-blue-500 text-blue-700 dark:border-blue-600 dark:text-blue-400"
+                                          )}>
+                                            {buyTx.taxType}
+                                          </Badge>
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination UI */}
+            {showPagination && totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Rows per page:</span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => setPageSize(parseInt(value))}
+                  >
+                    <SelectTrigger className="h-8 w-24 text-xs">
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[5, 10, 25, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()} className="text-xs">
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              );
-            })}
-          </div>
+                
+                <div className="flex items-center">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mr-4">
+                    Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, totalItems)}</span> to{" "}
+                    <span className="font-medium">{Math.min(currentPage * pageSize, totalItems)}</span> of{" "}
+                    <span className="font-medium">{totalItems}</span> transactions
+                  </div>
+                  
+                  <div className="flex items-center space-x-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={goToFirstPage}
+                      disabled={currentPage === 1}
+                    >
+                      <span className="sr-only">Go to first page</span>
+                      <ChevronsLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={goToPrevPage}
+                      disabled={currentPage === 1}
+                    >
+                      <span className="sr-only">Go to previous page</span>
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    
+                    <div className="text-xs font-medium mx-2">
+                      {currentPage} / {totalPages}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      <span className="sr-only">Go to next page</span>
+                      <ChevronRightIcon className="h-3.5 w-3.5" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={goToLastPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      <span className="sr-only">Go to last page</span>
+                      <ChevronsRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
       
