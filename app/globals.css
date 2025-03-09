@@ -36,6 +36,9 @@
 
     --usd-chart-line: 120, 75%, 50%;
     --btc-chart-line: 28, 96%, 55%;
+    
+    /* Bitcoin-specific colors */
+    --bitcoin-orange: 33, 96%, 54%;
   }
 
   .dark {
@@ -90,10 +93,73 @@
   @apply bg-opacity-20 backdrop-blur-lg;
 }
 
+/* Card hover effect - updated for more consistent behavior */
 .card {
-  @apply transition-all duration-300 hover:shadow-lg;
+  @apply transition-all duration-200;
+}
+
+.dark .card:hover {
+  @apply shadow-xl;
 }
 
 .button {
   @apply transition-all duration-300;
+}
+
+/* Bitcoin-specific styles */
+.text-bitcoin {
+  color: #f7931a;
+}
+
+.price-up {
+  @apply text-green-500 font-medium;
+}
+
+.price-down {
+  @apply text-red-500 font-medium;
+}
+
+/* Address display transition */
+.opacity-transition {
+  @apply transition-opacity duration-500;
+}
+
+.address-display {
+  @apply h-10 flex flex-col justify-center;
+}
+
+/* Bitcoin animations */
+.bitcoin-animation-container {
+  @apply relative h-6 overflow-hidden mt-2;
+}
+
+.bitcoin-pulse {
+  @apply absolute w-4 h-4 bg-[#f7931a] rounded-full opacity-60 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.8;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.bitcoin-sparkle {
+  @apply absolute w-full h-0.5 bottom-0;
+  background: linear-gradient(90deg, transparent, #f7931a, transparent);
+  animation: sparkle 3s infinite ease-in-out;
+}
+
+@keyframes sparkle {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
