@@ -11,7 +11,9 @@ import OverViewChart from '@/components/dashboard/charts/overview-chart';
 import { CsvManager } from '@/components/dashboard/data/csv-manager';
 import { useBitcoinData } from '@/lib/hooks/use-bitcoin-data';
 import AddressDisplay from '@/components/dashboard/data/address-display';
-import AccumulationChart, { AccumulationDataPoint } from '@/components/dashboard/charts/accumulation-chart';
+import AccumulationChart, {
+  AccumulationDataPoint,
+} from '@/components/dashboard/charts/accumulation-chart';
 
 export default function DashboardPage(): JSX.Element {
   // Portfolio data state
@@ -19,16 +21,16 @@ export default function DashboardPage(): JSX.Element {
   const [bitcoinHoldings, setBitcoinHoldings] = useState<number>(0);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [btcAccumulationData, setBtcAccumulationData] = useState<AccumulationDataPoint[]>([]);
-  
+
   // Use our custom Bitcoin data hook
-  const { 
-    price: bitcoinPrice, 
-    satsPerDollar, 
-    priceChangePercent, 
-    direction: priceDirection, 
-    isLoading: isBitcoinDataLoading 
+  const {
+    price: bitcoinPrice,
+    satsPerDollar,
+    priceChangePercent,
+    direction: priceDirection,
+    isLoading: isBitcoinDataLoading,
   } = useBitcoinData();
-  
+
   useEffect(() => {
     loadPortfolioData();
     loadBitcoinHoldings();
@@ -46,7 +48,7 @@ export default function DashboardPage(): JSX.Element {
 
   const loadPortfolioData = async (): Promise<void> => {
     try {
-      const response = await fetch('http://192.168.68.75:3090/api/metadata/portfolio_value/USD');
+      const response = await fetch('http://localhost:3090/api/metadata/portfolio_value/USD');
       const newData: ExchangeAmount = await response.json();
       setPortfolioValue(newData);
     } catch (error) {
@@ -56,9 +58,9 @@ export default function DashboardPage(): JSX.Element {
 
   const loadBitcoinHoldings = async (): Promise<void> => {
     try {
-      const response = await fetch('http://192.168.68.75:3090/api/metadata/holdings/BTC');
+      const response = await fetch('http://localhost:3090/api/metadata/holdings/BTC');
       const data: BitcoinHoldingsResponse = await response.json();
-      
+
       // Assuming the API returns the holdings in a format that includes an amount property
       if (data && typeof data.assetAmount.amount === 'number') {
         setBitcoinHoldings(data.assetAmount.amount);
@@ -72,15 +74,15 @@ export default function DashboardPage(): JSX.Element {
     try {
       // Get accumulation data for the past 180 days (approximately 6 months)
       const days = 180;
-      const response = await fetch(`http://192.168.68.75:3090/api/metadata/accumulation/BTC/${days}`);
+      const response = await fetch(`http://localhost:3090/api/metadata/accumulation/BTC/${days}`);
       const data: number[] = await response.json();
-      
+
       // Format data for the chart (assuming data is an array of values)
       const formattedData: AccumulationDataPoint[] = data.map((amount, index) => ({
         date: index, // Simple index for x-axis
-        amount: amount // The BTC amount at that point in time
+        amount: amount, // The BTC amount at that point in time
       }));
-      
+
       setBtcAccumulationData(formattedData);
     } catch (error) {
       console.error('Error loading BTC accumulation data:', error);
@@ -89,9 +91,9 @@ export default function DashboardPage(): JSX.Element {
 
   const loadBitcoinAddresses = async (): Promise<void> => {
     try {
-      const response = await fetch('http://192.168.68.75:3090/api/metadata/addresses/BTC');
+      const response = await fetch('http://localhost:3090/api/metadata/addresses/BTC');
       const data: string[] = await response.json();
-      
+
       if (Array.isArray(data)) {
         setAddresses(data);
       }
@@ -117,33 +119,55 @@ export default function DashboardPage(): JSX.Element {
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Card className="card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Sats per Dollar</CardTitle>
-                  <img 
-                    src="/btc-icon.png" 
-                    alt="Bitcoin Logo" 
-                    width="18" 
+                  <img
+                    src="/btc-icon.png"
+                    alt="Bitcoin Logo"
+                    width="18"
                     height="18"
                     className="object-contain"
                   />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {isBitcoinDataLoading 
-                      ? 'Loading...' 
+                    {isBitcoinDataLoading
+                      ? 'Loading...'
                       : satsPerDollar.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    BTC: <span className={priceDirection === 'up' ? 'price-up' : priceDirection === 'down' ? 'price-down' : ''}>
-                      ${bitcoinPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      {' '}{priceChangePercent}
+                    BTC:{' '}
+                    <span
+                      className={
+                        priceDirection === 'up'
+                          ? 'price-up'
+                          : priceDirection === 'down'
+                            ? 'price-down'
+                            : ''
+                      }
+                    >
+                      $
+                      {bitcoinPrice.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{' '}
+                      {priceChangePercent}
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    <span className={priceDirection === 'down' ? 'price-up' : priceDirection === 'up' ? 'price-down' : ''}>
+                    <span
+                      className={
+                        priceDirection === 'down'
+                          ? 'price-up'
+                          : priceDirection === 'up'
+                            ? 'price-down'
+                            : ''
+                      }
+                    >
                       {/* Sats go up when price goes down and vice versa */}
-                      {priceDirection === 'down' ? '+' : priceDirection === 'up' ? '-' : ''}{Math.abs(parseFloat(priceChangePercent)).toFixed(2)}% sats/$ in 24h
+                      {priceDirection === 'down' ? '+' : priceDirection === 'up' ? '-' : ''}
+                      {Math.abs(parseFloat(priceChangePercent)).toFixed(2)}% sats/$ in 24h
                     </span>
                   </p>
                   <div className="bitcoin-animation-container">
@@ -238,12 +262,14 @@ export default function DashboardPage(): JSX.Element {
               </Card>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <CsvManager onUploadSuccess={() => {
-                loadPortfolioData();
-                loadBitcoinHoldings();
-                loadBitcoinAddresses();
-                loadBtcAccumulation();
-              }} />
+              <CsvManager
+                onUploadSuccess={() => {
+                  loadPortfolioData();
+                  loadBitcoinHoldings();
+                  loadBitcoinAddresses();
+                  loadBtcAccumulation();
+                }}
+              />
             </div>
           </TabsContent>
           <TabsContent value="transactions" className="space-y-4">

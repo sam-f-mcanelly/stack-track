@@ -16,7 +16,7 @@ interface CsvManagerProps {
 
 export function CsvManager({
   onUploadSuccess,
-  apiBaseUrl = 'http://192.168.68.75:3090/api/data',
+  apiBaseUrl = 'http://localhost:3090/api/data',
 }: CsvManagerProps) {
   const [files, setFiles] = useState<FileList | null>(null);
   const [isUploading, setIsUploading] = useState(false);

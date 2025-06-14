@@ -46,7 +46,7 @@ export async function requestTaxReport(
   };
 
   try {
-    const response = await fetch(`http://192.168.68.75:3090/api/tax/request_report`, {
+    const response = await fetch(`http://localhost:3090/api/tax/request_report`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export async function requestTaxReport(
 export async function generatePdfTaxReport(taxReport: TaxReportResult): Promise<Blob> {
   try {
     // TODO: Replace with your backend domain - same as used in requestTaxReport
-    const response = await fetch(`http://192.168.68.75:3090/api/tax/report/pdf`, {
+    const response = await fetch(`http://localhost:3090/api/tax/report/pdf`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

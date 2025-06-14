@@ -15,7 +15,7 @@ export const TEMP_YEAR = 2024;
  */
 export const fetchSellTransactions = async (): Promise<TableTransaction[]> => {
   try {
-    const response = await fetch(`http://192.168.68.75:3090/api/data/sells/${TEMP_YEAR}`);
+    const response = await fetch(`http://localhost:3090/api/data/sells/${TEMP_YEAR}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

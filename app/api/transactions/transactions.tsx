@@ -21,7 +21,7 @@ export const TRANSACTION_TYPES: NormalizedTransactionType[] = [
  */
 export const ASSET_TYPES: string[] = ['BTC', 'ETH'];
 
-const API_BASE_URL = 'http://192.168.68.75:3090/api';
+const API_BASE_URL = 'http://localhost:3090/api';
 
 /**
  * Response structure for paginated transaction data
