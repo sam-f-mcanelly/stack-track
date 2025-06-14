@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -49,7 +49,11 @@ import {
 } from '@/app/api/transactions/transactions';
 import { formatValue } from '@/lib/utils/formatter';
 
-export function TransactionsTable(): JSX.Element {
+interface TransactionsTableProps {
+  containerHeight?: number;
+}
+
+export function TransactionsTable({ containerHeight }: TransactionsTableProps = {}): JSX.Element {
   const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
   const [sortKey, setSortKey] = useState<NormalizedTransactionSortKey>('timestamp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -61,6 +65,67 @@ export function TransactionsTable(): JSX.Element {
   // Filter states
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<NormalizedTransactionType[]>([]);
+
+  // Refs for measuring actual heights
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const paginationRef = useRef<HTMLDivElement>(null);
+  const tableHeaderRef = useRef<HTMLTableSectionElement>(null);
+
+  // Calculate dynamic page size based on actual available height
+  const calculateDynamicPageSize = useCallback(() => {
+    if (!containerRef.current || !headerRef.current || !paginationRef.current) {
+      return 10;
+    }
+
+    // Use passed containerHeight or measure the container
+    const availableContainerHeight = containerHeight || containerRef.current.clientHeight;
+    const headerHeight = headerRef.current.offsetHeight;
+    const paginationHeight = paginationRef.current.offsetHeight;
+    const tableHeaderHeight = tableHeaderRef.current?.offsetHeight || 50;
+    
+    // Add some padding for borders and spacing
+    const padding = 24;
+    
+    // Calculate available height for table rows
+    const availableHeight = availableContainerHeight - headerHeight - paginationHeight - tableHeaderHeight - padding;
+    
+    // Each table row is approximately 45px high
+    const rowHeight = 45;
+    const calculatedRows = Math.floor(availableHeight / rowHeight);
+    
+    // Ensure we have a reasonable range
+    return Math.max(5, Math.min(50, calculatedRows));
+  }, [containerHeight]);
+
+  // Calculate initial page size after component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const newPageSize = calculateDynamicPageSize();
+      if (newPageSize !== pageSize) {
+        setPageSize(newPageSize);
+      }
+    }, 100); // Small delay to ensure DOM is ready
+
+    return () => clearTimeout(timer);
+  }, [calculateDynamicPageSize, pageSize]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const newPageSize = calculateDynamicPageSize();
+      if (newPageSize !== pageSize) {
+        setPageSize(newPageSize);
+        setCurrentPage(1);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [calculateDynamicPageSize, pageSize]);
 
   useEffect(() => {
     loadData();
@@ -94,7 +159,7 @@ export function TransactionsTable(): JSX.Element {
       setSortKey(key);
       setSortOrder('asc');
     }
-    setCurrentPage(1); // Reset to first page when sorting changes
+    setCurrentPage(1);
   };
 
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -112,26 +177,23 @@ export function TransactionsTable(): JSX.Element {
   };
 
   const handleAssetChange = (asset: string): void => {
-    // Toggle selection: add if not present, remove if present
     if (selectedAssets.includes(asset)) {
       setSelectedAssets(selectedAssets.filter((a) => a !== asset));
     } else {
       setSelectedAssets([...selectedAssets, asset]);
     }
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleTypeChange = (type: NormalizedTransactionType): void => {
-    // Toggle selection: add if not present, remove if present
     if (selectedTypes.includes(type)) {
       setSelectedTypes(selectedTypes.filter((t) => t !== type));
     } else {
       setSelectedTypes([...selectedTypes, type]);
     }
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
-  // Get sort icon with appropriate direction
   const getSortIcon = (key: string) => {
     if (sortKey === key) {
       return (
@@ -147,8 +209,8 @@ export function TransactionsTable(): JSX.Element {
   };
 
   return (
-    <div className="space-y-4 pt-6">
-      <div className="flex justify-between items-center mb-4">
+    <div ref={containerRef} className="h-full flex flex-col space-y-4 pt-6">
+      <div ref={headerRef} className="flex justify-between items-center mb-4 flex-shrink-0">
         <h2 className="text-lg font-semibold">Transactions</h2>
         <div className="flex space-x-2">
           {/* Asset Type Filter Dropdown */}
@@ -221,9 +283,9 @@ export function TransactionsTable(): JSX.Element {
         </div>
       </div>
 
-      <div className="rounded-lg border dark:border-gray-700 overflow-hidden">
+      <div className="flex-1 rounded-lg border dark:border-gray-700 overflow-hidden min-h-0">
         <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+          <TableHeader ref={tableHeaderRef} className="bg-slate-50 dark:bg-slate-800/50">
             <TableRow>
               <TableHead className="text-xs w-[200px]">
                 <Button
@@ -483,9 +545,9 @@ export function TransactionsTable(): JSX.Element {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-2">
+      <div ref={paginationRef} className="flex items-center justify-between px-2 flex-shrink-0">
         <div className="text-xs text-gray-500">
-          Showing {transactions.length} of {totalItems} transactions
+          Showing {transactions.length} of {totalItems} transactions (Rows per page: {pageSize})
         </div>
         <div className="flex items-center space-x-2">
           <Button

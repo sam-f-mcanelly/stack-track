@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ComingSoon } from '@/components/shared/coming-soon';
 import { TransactionsTable } from '@/components/dashboard/transactions-table';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ExchangeAmount } from '@/lib/models/transactions';
 import OverViewChart from '@/components/dashboard/charts/overview-chart';
 import { CsvManager } from '@/components/dashboard/data/csv-manager';
@@ -21,6 +21,10 @@ export default function DashboardPage(): JSX.Element {
   const [bitcoinHoldings, setBitcoinHoldings] = useState<number>(0);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [btcAccumulationData, setBtcAccumulationData] = useState<AccumulationDataPoint[]>([]);
+  const [transactionsContainerHeight, setTransactionsContainerHeight] = useState<number>(0);
+
+  // Ref for transactions container
+  const transactionsContainerRef = useRef<HTMLDivElement>(null);
 
   // Use our custom Bitcoin data hook
   const {
@@ -36,6 +40,28 @@ export default function DashboardPage(): JSX.Element {
     loadBitcoinHoldings();
     loadBitcoinAddresses();
     loadBtcAccumulation();
+  }, []);
+
+  // Measure transactions container height
+  useEffect(() => {
+    const measureHeight = () => {
+      if (transactionsContainerRef.current) {
+        const height = transactionsContainerRef.current.clientHeight;
+        setTransactionsContainerHeight(height);
+      }
+    };
+
+    // Initial measurement
+    const timer = setTimeout(measureHeight, 100);
+
+    // Measure on resize
+    const handleResize = () => measureHeight();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Interface for Bitcoin holdings API response
@@ -104,20 +130,20 @@ export default function DashboardPage(): JSX.Element {
 
   return (
     <>
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="flex-1 space-y-4 p-8 pt-6 h-screen flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between space-y-2 flex-shrink-0">
           <h2 className="text-3xl font-bold tracking-tight gradient-bg text-transparent bg-clip-text">
             Dashboard
           </h2>
         </div>
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
+        <Tabs defaultValue="overview" className="space-y-4 flex-1 flex flex-col min-h-0">
+          <TabsList className="flex-shrink-0">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
-          <TabsContent value="overview" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4 flex-1 overflow-auto">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card className="card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -272,20 +298,23 @@ export default function DashboardPage(): JSX.Element {
               />
             </div>
           </TabsContent>
-          <TabsContent value="transactions" className="space-y-4">
-            <Card className="card">
-              <CardContent>
-                <TransactionsTable />
+          <TabsContent value="transactions" className="flex-1 min-h-0">
+            <Card className="card h-full">
+              <CardContent 
+                ref={transactionsContainerRef}
+                className="h-full p-6"
+              >
+                <TransactionsTable containerHeight={transactionsContainerHeight} />
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="analytics" className="space-y-4">
+          <TabsContent value="analytics" className="space-y-4 flex-1 overflow-auto">
             <ComingSoon
               title="Analytics"
               description="Gain insights into your cryptocurrency portfolio performance."
             />
           </TabsContent>
-          <TabsContent value="notifications" className="space-y-4">
+          <TabsContent value="notifications" className="space-y-4 flex-1 overflow-auto">
             <ComingSoon
               title="Notifications"
               description="Stay updated with important alerts and information about your portfolio."
