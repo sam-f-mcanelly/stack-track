@@ -36,7 +36,7 @@
 
     --usd-chart-line: 120, 75%, 50%;
     --btc-chart-line: 28, 96%, 55%;
-    
+
     /* Bitcoin-specific colors */
     --bitcoin-orange: 33, 96%, 54%;
   }
@@ -160,6 +160,10 @@
 }
 
 @keyframes sparkle {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }

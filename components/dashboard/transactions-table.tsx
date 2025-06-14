@@ -83,17 +83,18 @@ export function TransactionsTable({ containerHeight }: TransactionsTableProps = 
     const headerHeight = headerRef.current.offsetHeight;
     const paginationHeight = paginationRef.current.offsetHeight;
     const tableHeaderHeight = tableHeaderRef.current?.offsetHeight || 50;
-    
+
     // Add some padding for borders and spacing
     const padding = 24;
-    
+
     // Calculate available height for table rows
-    const availableHeight = availableContainerHeight - headerHeight - paginationHeight - tableHeaderHeight - padding;
-    
+    const availableHeight =
+      availableContainerHeight - headerHeight - paginationHeight - tableHeaderHeight - padding;
+
     // Each table row is approximately 45px high
     const rowHeight = 45;
     const calculatedRows = Math.floor(availableHeight / rowHeight);
-    
+
     // Ensure we have a reasonable range
     return Math.max(5, Math.min(50, calculatedRows));
   }, [containerHeight]);
@@ -121,7 +122,7 @@ export function TransactionsTable({ containerHeight }: TransactionsTableProps = 
     };
 
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };

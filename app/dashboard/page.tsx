@@ -300,10 +300,7 @@ export default function DashboardPage(): JSX.Element {
           </TabsContent>
           <TabsContent value="transactions" className="flex-1 min-h-0">
             <Card className="card h-full">
-              <CardContent 
-                ref={transactionsContainerRef}
-                className="h-full p-6"
-              >
+              <CardContent ref={transactionsContainerRef} className="h-full p-6">
                 <TransactionsTable containerHeight={transactionsContainerHeight} />
               </CardContent>
             </Card>
